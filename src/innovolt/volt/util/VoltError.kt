@@ -1,5 +1,7 @@
 package innovolt.volt.util
 
+import innovolt.volt.lexer.Location
+
 /**
  * Volt
  *
@@ -11,18 +13,18 @@ package innovolt.volt.util
  *
  * @author Christian Bryce Alexander
  */
-class VoltError(stage: String, msg: String, loc: Location) : Exception("Error @ $stage: $msg ($loc)") {
+class VoltError(stage: String, msg: String, loc: Location) : Exception("Volt $stage Error: $msg!$loc") {
     companion object {
         fun forLexer(msg: String, loc: Location): Nothing =
-            throw HyperError("Lexer", msg, loc)
+            throw VoltError("Lexer", msg, loc)
         
         fun forParser(msg: String, loc: Location): Nothing =
-            throw HyperError("Parser", msg, loc)
+            throw VoltError("Parser", msg, loc)
         
         fun forScript(msg: String, loc: Location): Nothing =
-            throw HyperError("Script", msg, loc)
+            throw VoltError("Script", msg, loc)
         
         fun failure(msg: String): Nothing =
-            throw HyperError("All", msg, Location.none)
+            throw VoltError("All", msg, Location.none)
     }
 }

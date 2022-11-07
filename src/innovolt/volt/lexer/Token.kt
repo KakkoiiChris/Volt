@@ -40,6 +40,7 @@ data class Token(val location: Location, val type: Type) {
             STAR_EQUAL("*="),
             SLASH_EQUAL("/="),
             PERCENT_EQUAL("%="),
+            CARET_EQUAL("^="),
             QUESTION("?"),
             DOUBLE_EQUAL("=="),
             LESS_GREATER("<>"),
@@ -53,6 +54,7 @@ data class Token(val location: Location, val type: Type) {
             STAR("*"),
             SLASH("/"),
             PERCENT("%"),
+            CARET("^"),
             POUND("#"),
             DOLLAR("$"),
             DOUBLE_PLUS("++"),
@@ -67,7 +69,7 @@ data class Token(val location: Location, val type: Type) {
             LEFT_BRACE("{"),
             RIGHT_BRACE("}"),
             COMMA(","),
-            END_OF_LINE(";"),
+            SEMICOLON(";"),
             END_OF_FILE("0");
         }
         
