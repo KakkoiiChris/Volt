@@ -15,7 +15,7 @@ data class Token(val location: Location, val type: Type) {
     sealed interface Type {
         enum class Keyword : Type {
             CLASS,
-            FN,
+            FUNCTION,
             IF,
             ELSE,
             WHILE,
