@@ -20,6 +20,8 @@ sealed interface Expr {
     fun <X> accept(visitor: Visitor<X>): X
     
     interface Visitor<X> {
+        fun visitEmptyExpr(expr: Empty): X
+        
         fun visitAssignExpr(expr: Assign): X
         
         fun visitTernaryExpr(expr: Ternary): X
@@ -51,6 +53,11 @@ sealed interface Expr {
         fun visitValueExpr(expr: Value): X
     }
     
+    class Empty(override val location: Location) : Expr {
+        override fun <X> accept(visitor: Visitor<X>): X =
+            visitor.visitEmptyExpr(this)
+    }
+    
     class Assign(override val location: Location, val target: Expr, val value: Expr) : Expr {
         override fun <X> accept(visitor: Visitor<X>): X =
             visitor.visitAssignExpr(this)
@@ -66,7 +73,26 @@ sealed interface Expr {
             visitor.visitBinaryExpr(this)
         
         enum class Operator(val type: Token.Type) {
-        
+            ADD(Token.Type.Symbol.PLUS),
+            SUBTRACT(Token.Type.Symbol.DASH),
+            MULTIPLY(Token.Type.Symbol.STAR),
+            DIVIDE(Token.Type.Symbol.SLASH),
+            MODULUS(Token.Type.Symbol.PERCENT),
+            POWER(Token.Type.Symbol.CARET),
+            CONCATENATE(Token.Type.Symbol.AMPERSAND),
+            AND(Token.Type.Keyword.AND),
+            OR(Token.Type.Keyword.OR),
+            LESS(Token.Type.Symbol.LESS_SIGN),
+            LESS_EQUAL(Token.Type.Symbol.LESS_EQUAL_SIGN),
+            GREATER(Token.Type.Symbol.GREATER_SIGN),
+            GREATER_EQUAL(Token.Type.Symbol.GREATER_EQUAL_SIGN),
+            EQUAL(Token.Type.Symbol.DOUBLE_EQUAL),
+            NOT_EQUAL(Token.Type.Symbol.LESS_GREATER);
+            
+            companion object{
+                fun byType(type:Token.Type)=
+                    values().find { it.type==type }
+            }
         }
     }
     
@@ -75,7 +101,17 @@ sealed interface Expr {
             visitor.visitPrefixExpr(this)
         
         enum class Operator(val type: Token.Type) {
-        
+            NEGATE(Token.Type.Symbol.DASH),
+            NOT(Token.Type.Keyword.NOT),
+            SIZE(Token.Type.Symbol.POUND),
+            STRING(Token.Type.Symbol.DOLLAR),
+            INCREMENT(Token.Type.Symbol.DOUBLE_PLUS),
+            DECREMENT(Token.Type.Symbol.DOUBLE_DASH);
+    
+            companion object{
+                fun byType(type:Token.Type)=
+                    Binary.Operator.values().find { it.type==type }
+            }
         }
     }
     
@@ -84,7 +120,13 @@ sealed interface Expr {
             visitor.visitPostfixExpr(this)
         
         enum class Operator(val type: Token.Type) {
-        
+            INCREMENT(Token.Type.Symbol.DOUBLE_PLUS),
+            DECREMENT(Token.Type.Symbol.DOUBLE_DASH);
+    
+            companion object{
+                fun byType(type:Token.Type)=
+                    Binary.Operator.values().find { it.type==type }
+            }
         }
     }
     
@@ -129,6 +171,10 @@ sealed interface Expr {
     }
     
     class Name(override val location: Location, val value: String) : Expr {
+        companion object {
+            val none = Name(Location.none, "")
+        }
+        
         override fun <X> accept(visitor: Visitor<X>): X =
             visitor.visitNameExpr(this)
     }

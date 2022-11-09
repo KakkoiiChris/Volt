@@ -1,5 +1,7 @@
 package innovolt.volt
 
+import innovolt.volt.util.Source
+
 /**
  * Volt
  *
@@ -19,10 +21,25 @@ fun main(args: Array<String>) = when (args.size) {
     else -> error("Usage: volt [fileName]")
 }
 
-private fun repl() {}
-
-private fun file(path: String) {
-
+private fun repl() {
+    do {
+        print("VOLT> ")
+        
+        val text = readln().takeIf { it.isNotEmpty() } ?: break
+        
+        val source = Source("REPL", text)
+        
+        exec(source)
+    }
+    while (true)
 }
 
-private fun exec() {}
+private fun file(path: String) {
+    val source = Source.read(path)
+    
+    exec(source)
+}
+
+private fun exec(source: Source) {
+    val program = source.compile()
+}

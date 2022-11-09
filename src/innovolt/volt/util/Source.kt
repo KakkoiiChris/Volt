@@ -1,5 +1,8 @@
 package innovolt.volt.util
 
+import innovolt.volt.lexer.Lexer
+import innovolt.volt.parser.Parser
+import innovolt.volt.parser.Program
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -23,13 +26,21 @@ data class Source(val name: String, val text: String) {
             
             return Source(name, text)
         }
-    
+        
         fun read(path: String): Source {
             val name = path.substring(path.lastIndexOf('/') + 1, path.indexOf('.'))
-        
+            
             val text = String(Files.readAllBytes(Paths.get(path)))
             
             return Source(name, text)
         }
+    }
+    
+    fun compile(): Program {
+        val lexer = Lexer(this)
+        
+        val parser = Parser(lexer)
+        
+        return parser.parse()
     }
 }
