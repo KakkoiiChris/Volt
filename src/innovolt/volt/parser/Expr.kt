@@ -30,8 +30,6 @@ sealed interface Expr {
         
         fun visitPrefixExpr(expr: Prefix): X
         
-        fun visitPostfixExpr(expr: Postfix): X
-        
         fun visitGetMemberExpr(expr: GetMember): X
         
         fun visitSetMemberExpr(expr: SetMember): X
@@ -89,9 +87,9 @@ sealed interface Expr {
             EQUAL(Token.Type.Symbol.DOUBLE_EQUAL),
             NOT_EQUAL(Token.Type.Symbol.LESS_GREATER);
             
-            companion object{
-                fun byType(type:Token.Type)=
-                    values().find { it.type==type }
+            companion object {
+                fun byType(type: Token.Type) =
+                    values().first { it.type == type }
             }
         }
     }
@@ -104,28 +102,11 @@ sealed interface Expr {
             NEGATE(Token.Type.Symbol.DASH),
             NOT(Token.Type.Keyword.NOT),
             SIZE(Token.Type.Symbol.POUND),
-            STRING(Token.Type.Symbol.DOLLAR),
-            INCREMENT(Token.Type.Symbol.DOUBLE_PLUS),
-            DECREMENT(Token.Type.Symbol.DOUBLE_DASH);
-    
-            companion object{
-                fun byType(type:Token.Type)=
-                    Binary.Operator.values().find { it.type==type }
-            }
-        }
-    }
-    
-    class Postfix(override val location: Location, val operator: Binary.Operator, val left: Expr) : Expr {
-        override fun <X> accept(visitor: Visitor<X>): X =
-            visitor.visitPostfixExpr(this)
-        
-        enum class Operator(val type: Token.Type) {
-            INCREMENT(Token.Type.Symbol.DOUBLE_PLUS),
-            DECREMENT(Token.Type.Symbol.DOUBLE_DASH);
-    
-            companion object{
-                fun byType(type:Token.Type)=
-                    Binary.Operator.values().find { it.type==type }
+            STRING(Token.Type.Symbol.DOLLAR);
+            
+            companion object {
+                fun byType(type: Token.Type) =
+                    Binary.Operator.values().first { it.type == type }
             }
         }
     }
@@ -150,7 +131,7 @@ sealed interface Expr {
             visitor.visitSetIndexExpr(this)
     }
     
-    class Invoke(override val location: Location, val target: Expr, val args: List<Expr>) : Expr {
+    class Invoke(override val location: Location, val target: Expr, val arguments: List<Expr>) : Expr {
         override fun <X> accept(visitor: Visitor<X>): X =
             visitor.visitInvokeExpr(this)
     }

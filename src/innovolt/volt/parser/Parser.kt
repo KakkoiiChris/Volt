@@ -4,6 +4,7 @@ import innovolt.volt.lexer.Lexer
 import innovolt.volt.lexer.Location
 import innovolt.volt.lexer.Token
 import innovolt.volt.util.VoltError
+import kotlin.reflect.KClass
 
 /**
  * Volt
@@ -35,8 +36,18 @@ class Parser(private val lexer: Lexer) {
     private fun match(type: Token.Type) =
         token.type == type
     
-    private fun match(predicate: (Token.Type) -> Boolean) =
-        predicate(token.type)
+    private fun <X : Token.Type> match(clazz: KClass<X>) =
+        clazz.isInstance(token.type)
+    
+    private fun matchAny(vararg types: Token.Type): Boolean {
+        for (type in types) {
+            if (match(type)) {
+                return true
+            }
+        }
+        
+        return false
+    }
     
     private fun step() {
         if (lexer.hasNext()) {
@@ -52,8 +63,8 @@ class Parser(private val lexer: Lexer) {
         }
         else false
     
-    private fun skip(predicate: (Token.Type) -> Boolean) =
-        if (match(predicate)) {
+    private fun <X : Token.Type> skip(clazz: KClass<X>) =
+        if (match(clazz)) {
             step()
             
             true
@@ -63,6 +74,12 @@ class Parser(private val lexer: Lexer) {
     private fun mustSkip(type: Token.Type) {
         if (!skip(type)) {
             VoltError.forParser("Token type '${token.type}' is invalid; expected $type!", here())
+        }
+    }
+    
+    private fun <X : Token.Type> mustSkip(clazz: KClass<X>) {
+        if (!skip(clazz)) {
+            VoltError.forParser("Token type '${token.type}' is invalid; expected $clazz!", here())
         }
     }
     
@@ -321,5 +338,375 @@ class Parser(private val lexer: Lexer) {
         mustSkip(Token.Type.Symbol.SEMICOLON)
         
         return Stmt.Expression(location, expr)
+    }
+    
+    private fun expr() =
+        assignExpr()
+    
+    private fun assignExpr(): Expr {
+        var expr = ternaryExpr()
+        
+        if (matchAny(Token.Type.Symbol.EQUAL_SIGN, Token.Type.Symbol.PLUS_EQUAL, Token.Type.Symbol.DASH_EQUAL, Token.Type.Symbol.STAR_EQUAL, Token.Type.Symbol.SLASH_EQUAL, Token.Type.Symbol.PERCENT_EQUAL, Token.Type.Symbol.CARET_EQUAL)) {
+            val symbol = token
+            
+            mustSkip(symbol.type)
+            
+            expr = desugarAssignment(symbol, expr)
+        }
+        
+        return expr
+    }
+    
+    private fun desugarAssignment(symbol: Token, target: Expr): Expr.Assign {
+        if (symbol.type == Token.Type.Symbol.EQUAL_SIGN) {
+            return Expr.Assign(symbol.location, target, ternaryExpr())
+        }
+        
+        val operator = when (symbol.type) {
+            Token.Type.Symbol.PLUS_EQUAL    -> Expr.Binary.Operator.ADD
+            
+            Token.Type.Symbol.DASH          -> Expr.Binary.Operator.SUBTRACT
+            
+            Token.Type.Symbol.STAR_EQUAL    -> Expr.Binary.Operator.MULTIPLY
+            
+            Token.Type.Symbol.SLASH_EQUAL   -> Expr.Binary.Operator.DIVIDE
+            
+            Token.Type.Symbol.PERCENT_EQUAL -> Expr.Binary.Operator.MODULUS
+            
+            Token.Type.Symbol.CARET_EQUAL   -> Expr.Binary.Operator.POWER
+            
+            else                            -> VoltError.forParser("Token type '$symbol' is not a valid assignment operator", symbol.location)
+        }
+        
+        val value = Expr.Binary(symbol.location, operator, target, ternaryExpr())
+        
+        return Expr.Assign(symbol.location, target, value)
+    }
+    
+    private fun ternaryExpr(): Expr {
+        var expr = disjunctionExpr()
+        
+        if (match(Token.Type.Symbol.QUESTION)) {
+            val symbol = token
+            
+            mustSkip(symbol.type)
+            
+            val yes = ternaryExpr()
+            
+            mustSkip(Token.Type.Symbol.COLON)
+            
+            val no = ternaryExpr()
+            
+            expr = Expr.Ternary(symbol.location, expr, yes, no)
+        }
+        
+        return expr
+    }
+    
+    private fun disjunctionExpr(): Expr {
+        var expr = conjunctionExpr()
+        
+        while (match(Token.Type.Keyword.OR)) {
+            val symbol = token
+            
+            mustSkip(symbol.type)
+            
+            expr = Expr.Binary(symbol.location, Expr.Binary.Operator.byType(symbol.type), expr, conjunctionExpr())
+        }
+        
+        return expr
+    }
+    
+    private fun conjunctionExpr(): Expr {
+        var expr = equalityExpr()
+        
+        while (match(Token.Type.Keyword.AND)) {
+            val symbol = token
+            
+            mustSkip(symbol.type)
+            
+            expr = Expr.Binary(symbol.location, Expr.Binary.Operator.byType(symbol.type), expr, equalityExpr())
+        }
+        
+        return expr
+    }
+    
+    private fun equalityExpr(): Expr {
+        var expr = relationalExpr()
+        
+        while (matchAny(Token.Type.Symbol.DOUBLE_EQUAL, Token.Type.Symbol.LESS_GREATER)) {
+            val symbol = token
+            
+            mustSkip(symbol.type)
+            
+            expr = Expr.Binary(symbol.location, Expr.Binary.Operator.byType(symbol.type), expr, relationalExpr())
+        }
+        
+        return expr
+    }
+    
+    private fun relationalExpr(): Expr {
+        var expr = concatenationExpr()
+        
+        while (matchAny(Token.Type.Symbol.LESS_SIGN, Token.Type.Symbol.LESS_EQUAL_SIGN, Token.Type.Symbol.GREATER_SIGN, Token.Type.Symbol.GREATER_EQUAL_SIGN)) {
+            val symbol = token
+            
+            mustSkip(symbol.type)
+            
+            expr = Expr.Binary(symbol.location, Expr.Binary.Operator.byType(symbol.type), expr, concatenationExpr())
+        }
+        
+        return expr
+    }
+    
+    private fun concatenationExpr(): Expr {
+        var expr = additiveExpr()
+        
+        while (match(Token.Type.Symbol.AMPERSAND)) {
+            val symbol = token
+            
+            mustSkip(symbol.type)
+            
+            expr = Expr.Binary(symbol.location, Expr.Binary.Operator.byType(symbol.type), expr, additiveExpr())
+        }
+        
+        return expr
+    }
+    
+    private fun additiveExpr(): Expr {
+        var expr = multiplicativeExpr()
+        
+        while (matchAny(Token.Type.Symbol.PLUS, Token.Type.Symbol.DASH)) {
+            val symbol = token
+            
+            mustSkip(symbol.type)
+            
+            expr = Expr.Binary(symbol.location, Expr.Binary.Operator.byType(symbol.type), expr, multiplicativeExpr())
+        }
+        
+        return expr
+    }
+    
+    private fun multiplicativeExpr(): Expr {
+        var expr = exponentiationExpr()
+        
+        while (matchAny(Token.Type.Symbol.STAR, Token.Type.Symbol.SLASH, Token.Type.Symbol.PERCENT)) {
+            val symbol = token
+            
+            mustSkip(symbol.type)
+            
+            expr = Expr.Binary(symbol.location, Expr.Binary.Operator.byType(symbol.type), expr, exponentiationExpr())
+        }
+        
+        return expr
+    }
+    
+    private fun exponentiationExpr(): Expr {
+        var expr = prefixExpr()
+        
+        while (match(Token.Type.Symbol.CARET)) {
+            val symbol = token
+            
+            mustSkip(symbol.type)
+            
+            expr = Expr.Binary(symbol.location, Expr.Binary.Operator.byType(symbol.type), expr, exponentiationExpr())
+        }
+        
+        return expr
+    }
+    
+    private fun prefixExpr(): Expr {
+        return if (matchAny(Token.Type.Symbol.DASH, Token.Type.Keyword.NOT, Token.Type.Symbol.POUND, Token.Type.Symbol.DOLLAR)) {
+            val symbol = token
+            
+            mustSkip(symbol.type)
+            
+            Expr.Prefix(symbol.location, Expr.Prefix.Operator.byType(symbol.type), prefixExpr())
+        }
+        else {
+            postfixExpr()
+        }
+    }
+    
+    private fun postfixExpr(): Expr {
+        var expr = terminalExpr()
+        
+        while (matchAny(Token.Type.Symbol.DOT, Token.Type.Symbol.LEFT_SQUARE, Token.Type.Symbol.LEFT_PAREN)) {
+            val symbol = token
+            
+            expr = when {
+                skip(Token.Type.Symbol.DOT)         -> {
+                    val name = nameExpr()
+                    
+                    Expr.GetMember(symbol.location, expr, name)
+                }
+                
+                skip(Token.Type.Symbol.LEFT_SQUARE) -> {
+                    val index = expr()
+                    
+                    mustSkip(Token.Type.Symbol.RIGHT_SQUARE)
+                    
+                    Expr.GetIndex(symbol.location, expr, index)
+                }
+                
+                skip(Token.Type.Symbol.LEFT_PAREN)  -> {
+                    val arguments = mutableListOf<Expr>()
+                    
+                    if (!skip(Token.Type.Symbol.RIGHT_PAREN)) {
+                        do {
+                            arguments += expr()
+                        }
+                        while (skip(Token.Type.Symbol.COMMA))
+                        
+                        mustSkip(Token.Type.Symbol.RIGHT_PAREN)
+                    }
+                    
+                    Expr.Invoke(symbol.location, expr, arguments)
+                }
+                
+                else                                -> VoltError.forParser("Invalid postfix", symbol.location)//TODO
+            }
+        }
+        
+        return expr
+    }
+    
+    private fun terminalExpr(): Expr {
+        var expr = when {
+            match(Token.Type.Symbol.LEFT_PAREN)  -> parentheticalExpr()
+            
+            match(Token.Type.Symbol.LEFT_SQUARE) -> listExpr()
+            
+            match(Token.Type.Symbol.LEFT_BRACE)  -> mapExpr()
+            
+            match(Token.Type.Identifier::class)  -> nameExpr()
+            
+            match(Token.Type.Value::class)       -> valueExpr()
+            
+            else                                 -> TODO()
+        }
+        
+        if (match(Token.Type.Symbol.ARROW) && expr is Expr.Name) {
+            val lambdaLocation = here()
+            
+            mustSkip(Token.Type.Symbol.ARROW)
+            
+            var body = stmt()
+            
+            if (body is Stmt.Expression) {
+                body = Stmt.Return(body.location, body.expr)
+            }
+            
+            expr = Expr.Lambda(lambdaLocation, Stmt.Function(lambdaLocation, Expr.Name.none, listOf(expr), body))
+        }
+        else {
+            TODO()
+        }
+        
+        return expr
+    }
+    
+    private fun parentheticalExpr(): Expr {
+        val location = here()
+        
+        mustSkip(Token.Type.Symbol.LEFT_PAREN)
+        
+        if (skip(Token.Type.Symbol.RIGHT_PAREN)) {
+            mustSkip(Token.Type.Symbol.ARROW)
+    
+            var body = stmt()
+    
+            if (body is Stmt.Expression) {
+                body = Stmt.Return(body.location, body.expr)
+            }
+    
+            return Expr.Lambda(location, Stmt.Function(location, Expr.Name.none, emptyList(), body))
+        }
+        
+        var expr = expr()
+        
+        if (match(Token.Type.Symbol.COMMA) && expr is Expr.Name) {
+            val params = mutableListOf(expr)
+            
+            while (skip(Token.Type.Symbol.COMMA)) {
+                params += nameExpr()
+            }
+            
+            mustSkip(Token.Type.Symbol.RIGHT_PAREN)
+            mustSkip(Token.Type.Symbol.ARROW)
+    
+            var body = stmt()
+    
+            if (body is Stmt.Expression) {
+                body = Stmt.Return(body.location, body.expr)
+            }
+    
+            expr = Expr.Lambda(location, Stmt.Function(location, Expr.Name.none, params, body))
+        }
+        else {
+            TODO()
+        }
+        
+        return expr
+    }
+    
+    private fun listExpr(): Expr {
+        val location = here()
+        
+        mustSkip(Token.Type.Symbol.LEFT_SQUARE)
+        
+        val elements = mutableListOf<Expr>()
+        
+        if (!skip(Token.Type.Symbol.RIGHT_SQUARE)) {
+            do {
+                elements += expr()
+            }
+            while (skip(Token.Type.Symbol.COMMA))
+            
+            mustSkip(Token.Type.Symbol.RIGHT_SQUARE)
+        }
+        
+        return Expr.ListLiteral(location, elements)
+    }
+    
+    private fun mapExpr(): Expr {
+        val location = here()
+        
+        mustSkip(Token.Type.Symbol.LEFT_BRACE)
+        
+        val pairs = mutableListOf<Pair<Expr.Name, Expr>>()
+        
+        if (!skip(Token.Type.Symbol.RIGHT_BRACE)) {
+            do {
+                val key = nameExpr()
+                
+                mustSkip(Token.Type.Symbol.COLON)
+                
+                val value = expr()
+                
+                pairs += key to value
+            }
+            while (skip(Token.Type.Symbol.COMMA))
+            
+            mustSkip(Token.Type.Symbol.RIGHT_BRACE)
+        }
+        
+        return Expr.MapLiteral(location, pairs)
+    }
+    
+    private fun nameExpr(): Expr.Name {
+        val token = token
+        
+        mustSkip(Token.Type.Identifier::class)
+        
+        return Expr.Name(token.location, (token.type as Token.Type.Identifier).value)
+    }
+    
+    private fun valueExpr(): Expr.Value {
+        val token = token
+        
+        mustSkip(Token.Type.Value::class)
+        
+        return Expr.Value(token.location, (token.type as Token.Type.Value).value)
     }
 }
