@@ -357,7 +357,7 @@ class Parser(private val lexer: Lexer) {
         return expr
     }
     
-    private fun desugarAssignment(symbol: Token, target: Expr): Expr.Assign {
+    private fun desugarAssignment(symbol: Token, target: Expr): Expr {
         if (symbol.type == Token.Type.Symbol.EQUAL_SIGN) {
             return Expr.Assign(symbol.location, target, ternaryExpr())
         }
@@ -373,14 +373,20 @@ class Parser(private val lexer: Lexer) {
             
             Token.Type.Symbol.PERCENT_EQUAL -> Expr.Binary.Operator.MODULUS
             
-            Token.Type.Symbol.CARET_EQUAL   -> Expr.Binary.Operator.POWER
+            Token.Type.Symbol.CARET_EQUAL   -> Expr.Binary.Operator.EXPONENTIATE
             
             else                            -> VoltError.forParser("Token type '$symbol' is not a valid assignment operator", symbol.location)
         }
         
         val value = Expr.Binary(symbol.location, operator, target, ternaryExpr())
         
-        return Expr.Assign(symbol.location, target, value)
+        return when (target) {
+            is Expr.GetMember -> Expr.SetMember(target.location, target.target, target.member, value)
+            
+            is Expr.GetIndex  -> Expr.SetIndex(target.location, target.target, target.index, value)
+            
+            else              -> Expr.Assign(symbol.location, target, value)
+        }
     }
     
     private fun ternaryExpr(): Expr {
@@ -613,13 +619,13 @@ class Parser(private val lexer: Lexer) {
         
         if (skip(Token.Type.Symbol.RIGHT_PAREN)) {
             mustSkip(Token.Type.Symbol.ARROW)
-    
+            
             var body = stmt()
-    
+            
             if (body is Stmt.Expression) {
                 body = Stmt.Return(body.location, body.expr)
             }
-    
+            
             return Expr.Lambda(location, Stmt.Function(location, Expr.Name.none, emptyList(), body))
         }
         
@@ -634,13 +640,13 @@ class Parser(private val lexer: Lexer) {
             
             mustSkip(Token.Type.Symbol.RIGHT_PAREN)
             mustSkip(Token.Type.Symbol.ARROW)
-    
+            
             var body = stmt()
-    
+            
             if (body is Stmt.Expression) {
                 body = Stmt.Return(body.location, body.expr)
             }
-    
+            
             expr = Expr.Lambda(location, Stmt.Function(location, Expr.Name.none, params, body))
         }
         else {

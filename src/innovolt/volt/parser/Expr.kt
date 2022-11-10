@@ -76,7 +76,7 @@ sealed interface Expr {
             MULTIPLY(Token.Type.Symbol.STAR),
             DIVIDE(Token.Type.Symbol.SLASH),
             MODULUS(Token.Type.Symbol.PERCENT),
-            POWER(Token.Type.Symbol.CARET),
+            EXPONENTIATE(Token.Type.Symbol.CARET),
             CONCATENATE(Token.Type.Symbol.AMPERSAND),
             AND(Token.Type.Keyword.AND),
             OR(Token.Type.Keyword.OR),
