@@ -15,6 +15,12 @@ import innovolt.volt.parser.Stmt
  *
  * @author Christian Bryce Alexander
  */
-class FunctionInstance(val location: Location, val name: Expr.Name, val params: List<Expr.Name>, val body: Stmt, val scope: Memory.Scope) {
+class VoltFunction(
+    val location: Location,
+    val name: Expr.Name,
+    override val params: List<Expr.Name>,
+    val body: Stmt,
+    val scope: Memory.Scope,
+) : Callable {
     constructor(function: Stmt.Function, scope: Memory.Scope) : this(function.location, function.name, function.params, function.body, scope)
 }

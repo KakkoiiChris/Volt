@@ -1,7 +1,5 @@
 package innovolt.volt.runtime
 
-import innovolt.volt.parser.Stmt
-
 /**
  * Volt
  *
@@ -25,15 +23,15 @@ interface Result<X> {
                 
                 is kotlin.String           -> String(x)
                 
-                is ListInstance            -> List(x)
+                is VoltList                -> List(x)
                 
-                is MapInstance             -> Map(x)
+                is VoltMap                 -> Map(x)
                 
-                is FunctionInstance        -> Function(x)
+                is VoltFunction            -> Function(x)
                 
-                is Stmt.Class              -> Class(x)
+                is VoltClass               -> Class(x)
                 
-                is ClassInstance           -> Instance(x)
+                is VoltInstance            -> Instance(x)
                 
                 innovolt.volt.runtime.Null -> Null
                 
@@ -51,15 +49,15 @@ interface Result<X> {
     
     class String(override val value: kotlin.String) : Result<kotlin.String>
     
-    class List(override val value: ListInstance) : Result<ListInstance>
+    class List(override val value: VoltList) : Result<VoltList>
     
-    class Map(override val value: MapInstance) : Result<MapInstance>
+    class Map(override val value: VoltMap) : Result<VoltMap>
     
-    class Function(override val value: FunctionInstance) : Result<FunctionInstance>
+    class Function(override val value: VoltFunction) : Result<VoltFunction>
     
-    class Class(override val value: Stmt.Class) : Result<Stmt.Class>
+    class Class(override val value: VoltClass) : Result<VoltClass>
     
-    class Instance(override val value: ClassInstance) : Result<ClassInstance>
+    class Instance(override val value: VoltInstance) : Result<VoltInstance>
     
     object Null : Result<innovolt.volt.runtime.Null> {
         override val value = innovolt.volt.runtime.Null

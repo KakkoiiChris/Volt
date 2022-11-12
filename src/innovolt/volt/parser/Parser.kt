@@ -592,7 +592,9 @@ class Parser(private val lexer: Lexer) {
             else                                 -> TODO()
         }
         
-        if (match(Token.Type.Symbol.ARROW) && expr is Expr.Name) {
+        if (match(Token.Type.Symbol.ARROW)) {
+            if (expr !is Expr.Name) TODO()
+            
             val lambdaLocation = here()
             
             mustSkip(Token.Type.Symbol.ARROW)
@@ -604,9 +606,6 @@ class Parser(private val lexer: Lexer) {
             }
             
             expr = Expr.Lambda(lambdaLocation, Stmt.Function(lambdaLocation, Expr.Name.none, listOf(expr), body))
-        }
-        else {
-            TODO()
         }
         
         return expr

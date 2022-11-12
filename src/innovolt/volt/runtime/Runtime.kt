@@ -28,8 +28,13 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
     }
     
     fun run(program: Program): Any {
-        for (stmt in program) {
-            visit(stmt)
+        try {
+            for (stmt in program) {
+                visit(stmt)
+            }
+        }
+        catch(`return`:Redirect.Return) {
+            return `return`.value.value ?: TODO()
         }
         
         return Unit
@@ -128,7 +133,7 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
                     Result.Boolean(false)
                 }
                 else {
-                    visit(expr.right) as Result.Boolean ?: TODO()
+                    visit(expr.right) as? Result.Boolean ?: TODO()
                 }
             }
             
@@ -139,7 +144,7 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
                     Result.Boolean(true)
                 }
                 else {
-                    visit(expr.right) as Result.Boolean ?: TODO()
+                    visit(expr.right) as? Result.Boolean ?: TODO()
                 }
             }
             
@@ -330,7 +335,7 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
     }
     
     override fun visitListLiteralExpr(expr: Expr.ListLiteral): Result<*> {
-        val list = ListInstance()
+        val list = VoltList()
         
         for (element in expr.elements) {
             list += visit(element)
@@ -340,7 +345,7 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
     }
     
     override fun visitMapLiteralExpr(expr: Expr.MapLiteral): Result<*> {
-        val map = MapInstance()
+        val map = VoltMap()
         
         for ((key, value) in expr.pairs) {
             map[key.value] = visit(value)
@@ -350,7 +355,7 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
     }
     
     override fun visitLambdaExpr(expr: Expr.Lambda) =
-        Result.Function(FunctionInstance(expr.function, memory.peek()))
+        Result.Function(VoltFunction(expr.function, memory.peek()))
     
     override fun visitNameExpr(expr: Expr.Name) =
         memory[expr.value]
@@ -358,59 +363,131 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
     override fun visitValueExpr(expr: Expr.Value) =
         Result.of(expr.value)
     
-    override fun visitEmptyStmt(stmt: Stmt.Empty) {
-        TODO("Not yet implemented")
-    }
+    override fun visitEmptyStmt(stmt: Stmt.Empty) =
+        Unit
     
     override fun visitBlockStmt(stmt: Stmt.Block) {
-        TODO("Not yet implemented")
+        try {
+            memory.push()
+            
+            for (subStmt in stmt.stmts) {
+                visit(subStmt)
+            }
+        }
+        finally {
+            memory.pop()
+        }
     }
     
     override fun visitIfStmt(stmt: Stmt.If) {
-        TODO("Not yet implemented")
+        val condition = visit(stmt.condition) as? Result.Boolean ?: TODO()
+        
+        if (condition.value) {
+            visit(stmt.body)
+        }
+        else {
+            visit(stmt.`else`)
+        }
     }
     
     override fun visitWhileStmt(stmt: Stmt.While) {
-        TODO("Not yet implemented")
+        while (true) {
+            val condition = visit(stmt.condition) as? Result.Boolean ?: TODO()
+            
+            if (!condition.value) break
+            
+            visit(stmt.body)
+        }
     }
     
     override fun visitDoStmt(stmt: Stmt.Do) {
-        TODO("Not yet implemented")
+        while (true) {
+            visit(stmt.body)
+            
+            val condition = visit(stmt.condition) as? Result.Boolean ?: TODO()
+            
+            if (!condition.value) break
+        }
     }
     
     override fun visitForStmt(stmt: Stmt.For) {
-        TODO("Not yet implemented")
+        val iterable = visit(stmt.iterable).iterable() ?: TODO()
+        
+        try {
+            memory.push()
+            
+            for (result in iterable) {
+                memory[stmt.pointer.value] = result
+                
+                visit(stmt.body)
+            }
+        }
+        finally {
+            memory.pop()
+        }
     }
     
+    private fun Result<*>.iterable() =
+        when (this) {
+            is Result.String -> value.toCharArray().map { Result.String(it.toString()) }
+            
+            is Result.List   -> value
+            
+            is Result.Map    -> value.values.toList()
+            
+            else             -> null
+        }
+    
     override fun visitTryStmt(stmt: Stmt.Try) {
-        TODO("Not yet implemented")
+        try {
+            visit(stmt.body)
+        }
+        catch (`throw`: Redirect.Throw) {
+            try {
+                memory.push()
+                
+                memory[stmt.error.value] = `throw`.value
+                
+                visit(stmt.catchBody)
+            }
+            finally {
+                memory.pop()
+            }
+        }
+        finally {
+            visit(stmt.finallyBody)
+        }
     }
     
     override fun visitBreakStmt(stmt: Stmt.Break) {
-        TODO("Not yet implemented")
+        throw Redirect.Break(stmt.location)
     }
     
     override fun visitContinueStmt(stmt: Stmt.Continue) {
-        TODO("Not yet implemented")
+        throw Redirect.Continue(stmt.location)
     }
     
     override fun visitThrowStmt(stmt: Stmt.Throw) {
-        TODO("Not yet implemented")
+        val value = visit(stmt.value)
+        
+        throw Redirect.Throw(stmt.location, value)
     }
     
     override fun visitReturnStmt(stmt: Stmt.Return) {
-        TODO("Not yet implemented")
+        val value = visit(stmt.value)
+        
+        throw Redirect.Return(stmt.location, value)
     }
     
     override fun visitFunctionStmt(stmt: Stmt.Function) {
-        TODO("Not yet implemented")
+        memory[stmt.name.value] = Result.Function(VoltFunction(stmt, memory.peek()))
     }
     
     override fun visitClassStmt(stmt: Stmt.Class) {
-        TODO("Not yet implemented")
+        memory[stmt.name.value] = Result.Class(VoltClass(stmt, memory.peek()))
     }
     
     override fun visitExpressionStmt(stmt: Stmt.Expression) {
-        TODO("Not yet implemented")
+        visit(stmt.expr)
     }
 }

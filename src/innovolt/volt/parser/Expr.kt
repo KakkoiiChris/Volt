@@ -109,7 +109,7 @@ sealed interface Expr {
             
             companion object {
                 fun byType(type: Token.Type) =
-                    Binary.Operator.values().first { it.type == type }
+                    values().first { it.type == type }
             }
         }
     }

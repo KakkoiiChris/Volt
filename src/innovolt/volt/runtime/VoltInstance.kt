@@ -11,4 +11,4 @@ package innovolt.volt.runtime
  *
  * @author Christian Bryce Alexander
  */
-class ClassInstance :Memory.Scope()
+class VoltInstance :Memory.Scope()
