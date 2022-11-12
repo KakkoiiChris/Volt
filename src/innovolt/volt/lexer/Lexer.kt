@@ -305,6 +305,8 @@ class Lexer(private val source: Source) : Iterator<Token> {
                 }
             }
         }
+    
+        mustSkip(delimiter)
         
         val type = Token.Type.Value(result)
         
