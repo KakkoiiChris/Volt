@@ -20,6 +20,9 @@ sealed interface Expr {
     fun <X> accept(visitor: Visitor<X>): X
     
     interface Visitor<X> {
+        fun visit(expr: Expr): X =
+            expr.accept(this)
+        
         fun visitEmptyExpr(expr: Empty): X
         
         fun visitAssignExpr(expr: Assign): X
@@ -56,7 +59,7 @@ sealed interface Expr {
             visitor.visitEmptyExpr(this)
     }
     
-    class Assign(override val location: Location, val target: Expr, val value: Expr) : Expr {
+    class Assign(override val location: Location, val name: Name, val value: Expr) : Expr {
         override fun <X> accept(visitor: Visitor<X>): X =
             visitor.visitAssignExpr(this)
     }
@@ -94,7 +97,7 @@ sealed interface Expr {
         }
     }
     
-    class Prefix(override val location: Location, val operator: Binary.Operator, val right: Expr) : Expr {
+    class Prefix(override val location: Location, val operator: Operator, val right: Expr) : Expr {
         override fun <X> accept(visitor: Visitor<X>): X =
             visitor.visitPrefixExpr(this)
         

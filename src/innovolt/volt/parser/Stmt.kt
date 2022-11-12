@@ -19,6 +19,9 @@ sealed interface Stmt {
     fun <X> accept(visitor: Visitor<X>): X
     
     interface Visitor<X> {
+        fun visit(stmt: Stmt): X =
+            stmt.accept(this)
+        
         fun visitEmptyStmt(stmt: Empty): X
         
         fun visitBlockStmt(stmt: Block): X

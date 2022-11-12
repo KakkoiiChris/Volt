@@ -11,5 +11,4 @@ package innovolt.volt.runtime
  *
  * @author Christian Bryce Alexander
  */
-class ListInstance {
-}
+class ListInstance : MutableList<Result<*>> by mutableListOf()

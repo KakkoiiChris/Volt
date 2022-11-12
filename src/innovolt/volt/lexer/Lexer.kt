@@ -22,7 +22,7 @@ class Lexer(private val source: Source) : Iterator<Token> {
     
     private val keywords = Token.Type.Keyword.values().associateBy { it.name.lowercase() }
     
-    private val literals = listOf(true, false, Null).associateBy { it.toString() }
+    private val literals = listOf(true, false, Null, Unit).associateBy { it.toString() }
     
     private var position = 0
     private var row = 1

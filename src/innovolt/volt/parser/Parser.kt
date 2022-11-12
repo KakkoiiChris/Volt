@@ -358,7 +358,7 @@ class Parser(private val lexer: Lexer) {
     }
     
     private fun desugarAssignment(symbol: Token, target: Expr): Expr {
-        if (symbol.type == Token.Type.Symbol.EQUAL_SIGN) {
+        if (symbol.type == Token.Type.Symbol.EQUAL_SIGN && target is Expr.Name) {
             return Expr.Assign(symbol.location, target, ternaryExpr())
         }
         
@@ -385,7 +385,7 @@ class Parser(private val lexer: Lexer) {
             
             is Expr.GetIndex  -> Expr.SetIndex(target.location, target.target, target.index, value)
             
-            else              -> Expr.Assign(symbol.location, target, value)
+            else              -> TODO()
         }
     }
     

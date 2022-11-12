@@ -11,5 +11,4 @@ package innovolt.volt.runtime
  *
  * @author Christian Bryce Alexander
  */
-class MapInstance {
-}
+class MapInstance : MutableMap<String, Result<*>> by mutableMapOf()

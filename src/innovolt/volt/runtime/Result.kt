@@ -14,6 +14,35 @@ import innovolt.volt.parser.Stmt
  * @author Christian Bryce Alexander
  */
 interface Result<X> {
+    companion object {
+        fun of(x: Any) =
+            when (x) {
+                is Result<*>               -> x
+                
+                is kotlin.Boolean          -> Boolean(x)
+                
+                is Double                  -> Number(x)
+                
+                is kotlin.String           -> String(x)
+                
+                is ListInstance            -> List(x)
+                
+                is MapInstance             -> Map(x)
+                
+                is FunctionInstance        -> Function(x)
+                
+                is Stmt.Class              -> Class(x)
+                
+                is ClassInstance           -> Instance(x)
+                
+                innovolt.volt.runtime.Null -> Null
+                
+                kotlin.Unit                -> Unit
+                
+                else                       -> TODO()
+            }
+    }
+    
     val value: X
     
     class Boolean(override val value: kotlin.Boolean) : Result<kotlin.Boolean>
@@ -30,7 +59,7 @@ interface Result<X> {
     
     class Class(override val value: Stmt.Class) : Result<Stmt.Class>
     
-    class Instance(override val value: kotlin.Boolean) : Result<kotlin.Boolean>
+    class Instance(override val value: ClassInstance) : Result<ClassInstance>
     
     object Null : Result<innovolt.volt.runtime.Null> {
         override val value = innovolt.volt.runtime.Null

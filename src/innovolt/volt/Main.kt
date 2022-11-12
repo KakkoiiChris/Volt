@@ -1,5 +1,6 @@
 package innovolt.volt
 
+import innovolt.volt.runtime.Runtime
 import innovolt.volt.util.Source
 
 /**
@@ -22,24 +23,43 @@ fun main(args: Array<String>) = when (args.size) {
 }
 
 private fun repl() {
-    do {
-        print("VOLT> ")
+    val runtime = Runtime()
+    
+    try {
+        runtime.start()
         
-        val text = readln().takeIf { it.isNotEmpty() } ?: break
-        
-        val source = Source("REPL", text)
-        
-        exec(source)
+        do {
+            print("VOLT> ")
+            
+            val text = readln().takeIf { it.isNotEmpty() } ?: break
+            
+            val source = Source("REPL", text)
+            
+            exec(runtime, source)
+        }
+        while (true)
     }
-    while (true)
+    finally {
+        runtime.stop()
+    }
 }
 
 private fun file(path: String) {
+    val runtime = Runtime()
+    
+    runtime.start()
+    
     val source = Source.read(path)
     
-    exec(source)
+    exec(runtime, source)
+    
+    runtime.stop()
 }
 
-private fun exec(source: Source) {
+private fun exec(runtime: Runtime, source: Source) {
     val program = source.compile()
+    
+    val result = runtime.run(program)
+    
+    println("Done: $result")
 }
