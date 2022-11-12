@@ -192,44 +192,44 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
                 is Result.Boolean -> when (val right = visit(expr.right)) {
                     is Result.Boolean -> Result.Boolean(left.value == right.value)
                     
-                    else              -> TODO()
+                    else              -> Result.Boolean(false)
                 }
                 
                 is Result.Number  -> when (val right = visit(expr.right)) {
                     is Result.Number -> Result.Boolean(left.value == right.value)
                     
-                    else             -> TODO()
+                    else             -> Result.Boolean(false)
                 }
                 
                 is Result.String  -> when (val right = visit(expr.right)) {
                     is Result.String -> Result.Boolean(left.value == right.value)
                     
-                    else             -> TODO()
+                    else             -> Result.Boolean(false)
                 }
                 
-                else              -> TODO()
+                else              -> Result.Boolean(false)
             }
             
             Expr.Binary.Operator.NOT_EQUAL     -> when (val left = visit(expr.left)) {
                 is Result.Boolean -> when (val right = visit(expr.right)) {
                     is Result.Boolean -> Result.Boolean(left.value != right.value)
                     
-                    else              -> TODO()
+                    else              -> Result.Boolean(true)
                 }
                 
                 is Result.Number  -> when (val right = visit(expr.right)) {
                     is Result.Number -> Result.Boolean(left.value != right.value)
                     
-                    else             -> TODO()
+                    else             -> Result.Boolean(true)
                 }
                 
                 is Result.String  -> when (val right = visit(expr.right)) {
                     is Result.String -> Result.Boolean(left.value != right.value)
                     
-                    else             -> TODO()
+                    else             -> Result.Boolean(true)
                 }
                 
-                else              -> TODO()
+                else              -> Result.Boolean(true)
             }
         }
     
