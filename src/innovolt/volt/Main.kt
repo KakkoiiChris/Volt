@@ -2,6 +2,8 @@ package innovolt.volt
 
 import innovolt.volt.runtime.Runtime
 import innovolt.volt.util.Source
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTimedValue
 
 /**
  * Volt
@@ -56,10 +58,11 @@ private fun file(path: String) {
     runtime.stop()
 }
 
+@OptIn(ExperimentalTime::class)
 private fun exec(runtime: Runtime, source: Source) {
     val program = source.compile()
     
-    val result = runtime.run(program)
+    val (result, time) = measureTimedValue { runtime.run(program) }
     
-    println("Done: $result")
+    println("Done: $result (${time.inWholeNanoseconds / 1E6} ms)")
 }

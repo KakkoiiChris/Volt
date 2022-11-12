@@ -33,7 +33,7 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
                 visit(stmt)
             }
         }
-        catch(`return`:Redirect.Return) {
+        catch (`return`: Redirect.Return) {
             return `return`.value ?: TODO()
         }
         
@@ -331,7 +331,41 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
         }
     
     override fun visitInvokeExpr(expr: Expr.Invoke): Result<*> {
-        TODO("Not yet implemented")
+        val callable = visit(expr.target).value as? Callable ?: TODO()
+        
+        if (callable.params.size != expr.arguments.size) TODO()
+        
+        val variables = callable.params.zip(expr.arguments.map { visit(it) })
+        
+        return when (callable) {
+            is VoltFunction -> invokeFunction(callable, variables)
+            
+            is VoltClass    -> invokeClass(callable, variables)
+        }
+    }
+    
+    private fun invokeFunction(function: VoltFunction, variables: List<Pair<Expr.Name, Result<*>>>): Result<*> {
+        try {
+            memory.push(Memory.Scope(function.scope))
+            
+            for ((name, value) in variables) {
+                memory[name.value] = value
+            }
+            
+            visit(function.body)
+        }
+        catch (`return`: Redirect.Return) {
+            return `return`.value
+        }
+        finally {
+            memory.pop()
+        }
+        
+        return Result.Unit
+    }
+    
+    private fun invokeClass(`class`: VoltClass, variables: List<Pair<Expr.Name, Result<*>>>): Result.Class {
+        TODO()
     }
     
     override fun visitListLiteralExpr(expr: Expr.ListLiteral): Result<*> {
