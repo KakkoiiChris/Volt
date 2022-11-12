@@ -36,24 +36,26 @@ class Memory : Stack<Memory.Scope>() {
         operator fun get(key: String): Result<*> {
             var here: Scope? = this
             
-            while (here?.vars?.get(key) == null) {
-                here = here?.parent
+            while (here != null && here.vars[key] == null) {
+                here = here.parent
             }
             
-            return here.vars[key] ?: Result.Null
+            return here?.vars?.get(key) ?: Result.Null
         }
         
         operator fun set(key: String, value: Result<*>) {
             var here: Scope? = this
             
-            while (here?.vars?.get(key) == null) {
-                here = here?.parent
+            while (here != null && here.vars[key] == null) {
+                here = here.parent
             }
+            
+            if (here == null) here = this
             
             if (value === Result.Null) {
                 here.vars.remove(key)
             }
-            
+    
             here.vars[key] = value
         }
     }

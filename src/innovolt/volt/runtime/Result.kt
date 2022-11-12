@@ -1,5 +1,7 @@
 package innovolt.volt.runtime
 
+import kotlin.math.floor
+
 /**
  * Volt
  *
@@ -43,27 +45,51 @@ interface Result<X> {
     
     val value: X
     
-    class Boolean(override val value: kotlin.Boolean) : Result<kotlin.Boolean>
+    class Boolean(override val value: kotlin.Boolean) : Result<kotlin.Boolean> {
+        override fun toString() = value.toString()
+    }
     
-    class Number(override val value: Double) : Result<Double>
+    class Number(override val value: Double) : Result<Double> {
+        override fun toString() =
+            if (value == floor(value))
+                value.toInt().toString()
+            else
+                value.toString()
+    }
     
-    class String(override val value: kotlin.String) : Result<kotlin.String>
+    class String(override val value: kotlin.String) : Result<kotlin.String> {
+        override fun toString() = value.toString()
+    }
     
-    class List(override val value: VoltList) : Result<VoltList>
+    class List(override val value: VoltList) : Result<VoltList> {
+        override fun toString() = value.joinToString(prefix = "[ ", separator = ", ", postfix = " ]")
+    }
     
-    class Map(override val value: VoltMap) : Result<VoltMap>
+    class Map(override val value: VoltMap) : Result<VoltMap> {
+        override fun toString() = value.entries.joinToString(prefix = "[ ", separator = ", ", postfix = " ]") { (k, v) -> "$k : $v" }
+    }
     
-    class Function(override val value: VoltFunction) : Result<VoltFunction>
+    class Function(override val value: VoltFunction) : Result<VoltFunction> {
+        override fun toString() = value.toString()
+    }
     
-    class Class(override val value: VoltClass) : Result<VoltClass>
+    class Class(override val value: VoltClass) : Result<VoltClass> {
+        override fun toString() = value.toString()
+    }
     
-    class Instance(override val value: VoltInstance) : Result<VoltInstance>
+    class Instance(override val value: VoltInstance) : Result<VoltInstance> {
+        override fun toString() = value.toString()
+    }
     
     object Null : Result<innovolt.volt.runtime.Null> {
         override val value = innovolt.volt.runtime.Null
+        
+        override fun toString() = value.toString()
     }
     
     object Unit : Result<kotlin.Unit> {
         override val value = kotlin.Unit
+        
+        override fun toString() = value.toString()
     }
 }

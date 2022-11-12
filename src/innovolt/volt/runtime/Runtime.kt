@@ -27,17 +27,17 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
         memory.pop()
     }
     
-    fun run(program: Program): Any {
+    fun run(program: Program): Result<*> {
         try {
             for (stmt in program) {
                 visit(stmt)
             }
         }
         catch(`return`:Redirect.Return) {
-            return `return`.value.value ?: TODO()
+            return `return`.value ?: TODO()
         }
         
-        return Unit
+        return Result.Unit
     }
     
     override fun visitEmptyExpr(expr: Expr.Empty) =
