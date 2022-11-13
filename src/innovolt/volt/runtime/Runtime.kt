@@ -36,6 +36,12 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
         catch (`return`: Redirect.Return) {
             return `return`.value ?: TODO()
         }
+        catch(_:Redirect.Break) {
+            TODO()
+        }
+        catch(_:Redirect.Continue) {
+            TODO()
+        }
         
         return Result.Unit
     }
@@ -430,13 +436,29 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
             
             if (!condition.value) break
             
-            visit(stmt.body)
+            try {
+                visit(stmt.body)
+            }
+            catch (`break`: Redirect.Break) {
+                break
+            }
+            catch (`continue`: Redirect.Continue) {
+                continue
+            }
         }
     }
     
     override fun visitDoStmt(stmt: Stmt.Do) {
         while (true) {
-            visit(stmt.body)
+            try {
+                visit(stmt.body)
+            }
+            catch (`break`: Redirect.Break) {
+                break
+            }
+            catch (`continue`: Redirect.Continue) {
+                continue
+            }
             
             val condition = visit(stmt.condition) as? Result.Boolean ?: TODO()
             
@@ -452,8 +474,16 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
             
             for (result in iterable) {
                 memory[stmt.pointer.value] = result
-                
-                visit(stmt.body)
+    
+                try {
+                    visit(stmt.body)
+                }
+                catch (`break`: Redirect.Break) {
+                    break
+                }
+                catch (`continue`: Redirect.Continue) {
+                    continue
+                }
             }
         }
         finally {
