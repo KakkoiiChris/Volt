@@ -36,10 +36,10 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
         catch (`return`: Redirect.Return) {
             return `return`.value ?: TODO()
         }
-        catch(_:Redirect.Break) {
+        catch (_: Redirect.Break) {
             TODO()
         }
-        catch(_:Redirect.Continue) {
+        catch (_: Redirect.Continue) {
             TODO()
         }
         
@@ -370,8 +370,25 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
         return Result.Unit
     }
     
-    private fun invokeClass(`class`: VoltClass, variables: List<Pair<Expr.Name, Result<*>>>): Result.Class {
-        TODO()
+    private fun invokeClass(`class`: VoltClass, variables: List<Pair<Expr.Name, Result<*>>>): Result.Instance {
+        val instance = VoltInstance(`class`)
+        
+        try {
+            memory.push(instance)
+            
+            for ((name, value) in variables) {
+                memory[name.value] = value
+            }
+            
+            for (stmt in `class`.init.stmts) {
+                visit(stmt)
+            }
+        }
+        finally {
+            memory.pop()
+        }
+        
+        return Result.Instance(instance)
     }
     
     override fun visitListLiteralExpr(expr: Expr.ListLiteral): Result<*> {
@@ -474,7 +491,7 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
             
             for (result in iterable) {
                 memory[stmt.pointer.value] = result
-    
+                
                 try {
                     visit(stmt.body)
                 }
