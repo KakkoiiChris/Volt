@@ -1,6 +1,7 @@
 package innovolt.volt.runtime
 
 import innovolt.volt.lexer.Location
+import innovolt.volt.linker.Link
 import innovolt.volt.parser.Expr
 import innovolt.volt.parser.Stmt
 
@@ -21,6 +22,18 @@ class VoltFunction(
     override val params: List<Expr.Name>,
     val body: Stmt,
     val scope: Memory.Scope,
+    val link: Link.Function?,
 ) : Callable {
-    constructor(function: Stmt.Function, scope: Memory.Scope) : this(function.location, function.name, function.params, function.body, scope)
+    constructor(
+        function: Stmt.Function,
+        scope: Memory.Scope,
+        link: Link.Function?,
+    ) : this(
+        function.location,
+        function.name,
+        function.params,
+        function.body,
+        scope,
+        link
+    )
 }

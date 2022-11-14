@@ -106,7 +106,9 @@ sealed interface Stmt {
             visitor.visitReturnStmt(this)
     }
     
-    class Function(override val location: Location, val name: Expr.Name, val params: List<Expr.Name>, val body: Stmt) : Stmt {
+    class Function(override val location: Location, val path: String, val name: Expr.Name, val params: List<Expr.Name>, val body: Stmt) : Stmt {
+        val isLinked = body is Empty
+        
         override fun <X> accept(visitor: Visitor<X>): X =
             visitor.visitFunctionStmt(this)
     }

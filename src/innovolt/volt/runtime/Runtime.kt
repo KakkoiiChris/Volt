@@ -1,5 +1,7 @@
 package innovolt.volt.runtime
 
+import innovolt.volt.linker.Link
+import innovolt.volt.linker.Linker
 import innovolt.volt.parser.Expr
 import innovolt.volt.parser.Program
 import innovolt.volt.parser.Stmt
@@ -16,11 +18,17 @@ import kotlin.math.pow
  *
  * @author Christian Bryce Alexander
  */
-class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
+class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
     private val memory = Memory()
     
     fun start() {
         memory.push()
+        
+        for (source in linker.getSources()) {
+            for (stmt in source.compile()) {
+                visit(stmt)
+            }
+        }
     }
     
     fun stop() {
@@ -34,7 +42,7 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
             }
         }
         catch (`return`: Redirect.Return) {
-            return `return`.value ?: TODO()
+            return `return`.value
         }
         catch (_: Redirect.Break) {
             TODO()
@@ -351,6 +359,25 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
     }
     
     private fun invokeFunction(function: VoltFunction, variables: List<Pair<Expr.Name, Result<*>>>): Result<*> {
+        val link = function.link
+        
+        if (link != null) {
+            val args = variables.map { it.second }
+            
+            if (!function.link.resolve(args)) {
+                TODO()
+            }
+            
+            val scope = function.scope
+            
+            val instance = if (scope is VoltInstance)
+                Result.Instance(scope)
+            else
+                null
+            
+            return link(this, instance, args)
+        }
+        
         try {
             memory.push(Memory.Scope(function.scope))
             
@@ -412,7 +439,7 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
     }
     
     override fun visitLambdaExpr(expr: Expr.Lambda) =
-        Result.Function(VoltFunction(expr.function, memory.peek()))
+        Result.Function(VoltFunction(expr.function, memory.peek(), null))
     
     override fun visitNameExpr(expr: Expr.Name) =
         memory[expr.value]
@@ -561,7 +588,13 @@ class Runtime : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
     }
     
     override fun visitFunctionStmt(stmt: Stmt.Function) {
-        memory[stmt.name.value] = Result.Function(VoltFunction(stmt, memory.peek()))
+        var link: Link.Function? = null
+        
+        if (stmt.isLinked) {
+            link = linker.getFunction(stmt.path) ?: TODO()
+        }
+        
+        memory[stmt.name.value] = Result.Function(VoltFunction(stmt, memory.peek(), link))
     }
     
     override fun visitClassStmt(stmt: Stmt.Class) {

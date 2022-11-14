@@ -17,5 +17,5 @@ data class Location(val name: String, val row: Int, val column: Int) {
     }
     
     override fun toString() =
-        if (name.isNotEmpty()) " @ $name.vt ($row, $column)" else ""
+        if (name.isNotEmpty()) " @ $name.volt ($row, $column)" else ""
 }

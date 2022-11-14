@@ -18,6 +18,8 @@ import kotlin.reflect.KClass
  * @author Christian Bryce Alexander
  */
 class Parser(private val lexer: Lexer) {
+    private val path = ClassPath()
+    
     private var token = lexer.next()
     
     fun parse(): Program {
@@ -304,7 +306,7 @@ class Parser(private val lexer: Lexer) {
         }
         else stmt()
         
-        return Stmt.Function(location, name, params, body)
+        return Stmt.Function(location, path.toPath(name.value), name, params, body)
     }
     
     private fun classStmt(): Stmt.Class {
@@ -361,7 +363,7 @@ class Parser(private val lexer: Lexer) {
         if (symbol.type == Token.Type.Symbol.EQUAL_SIGN) {
             return when (target) {
                 is Expr.Name      -> Expr.Assign(symbol.location, target, ternaryExpr())
-    
+                
                 is Expr.GetMember -> Expr.SetMember(symbol.location, target.target, target.member, ternaryExpr())
                 
                 is Expr.GetIndex  -> Expr.SetIndex(symbol.location, target.target, target.index, ternaryExpr())
@@ -390,7 +392,7 @@ class Parser(private val lexer: Lexer) {
         
         return when (target) {
             is Expr.Name      -> Expr.Assign(symbol.location, target, value)
-    
+            
             is Expr.GetMember -> Expr.SetMember(symbol.location, target.target, target.member, value)
             
             is Expr.GetIndex  -> Expr.SetIndex(symbol.location, target.target, target.index, value)
@@ -615,7 +617,7 @@ class Parser(private val lexer: Lexer) {
                 body = Stmt.Return(body.location, body.expr)
             }
             
-            expr = Expr.Lambda(lambdaLocation, Stmt.Function(lambdaLocation, Expr.Name.none, listOf(expr), body))
+            expr = Expr.Lambda(lambdaLocation, Stmt.Function(lambdaLocation, "", Expr.Name.none, listOf(expr), body))
         }
         
         return expr
@@ -635,7 +637,7 @@ class Parser(private val lexer: Lexer) {
                 body = Stmt.Return(body.location, body.expr)
             }
             
-            return Expr.Lambda(location, Stmt.Function(location, Expr.Name.none, emptyList(), body))
+            return Expr.Lambda(location, Stmt.Function(location, "", Expr.Name.none, emptyList(), body))
         }
         
         var expr = expr()
@@ -656,7 +658,7 @@ class Parser(private val lexer: Lexer) {
                 body = Stmt.Return(body.location, body.expr)
             }
             
-            expr = Expr.Lambda(location, Stmt.Function(location, Expr.Name.none, params, body))
+            expr = Expr.Lambda(location, Stmt.Function(location, "", Expr.Name.none, params, body))
         }
         else {
             TODO()
