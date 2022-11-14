@@ -58,7 +58,7 @@ interface Result<X> {
     }
     
     class String(override val value: kotlin.String) : Result<kotlin.String> {
-        override fun toString() = value.toString()
+        override fun toString() = value
     }
     
     class List(override val value: VoltList) : Result<VoltList> {

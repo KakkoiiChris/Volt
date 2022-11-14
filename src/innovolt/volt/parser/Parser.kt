@@ -610,12 +610,8 @@ class Parser(private val lexer: Lexer) {
             val lambdaLocation = here()
             
             mustSkip(Token.Type.Symbol.ARROW)
-            
-            var body = stmt()
-            
-            if (body is Stmt.Expression) {
-                body = Stmt.Return(body.location, body.expr)
-            }
+    
+            val body = if (match(Token.Type.Symbol.LEFT_BRACE)) blockStmt() else Stmt.Return(here(), expr());
             
             expr = Expr.Lambda(lambdaLocation, Stmt.Function(lambdaLocation, "", Expr.Name.none, listOf(expr), body))
         }
@@ -631,18 +627,16 @@ class Parser(private val lexer: Lexer) {
         if (skip(Token.Type.Symbol.RIGHT_PAREN)) {
             mustSkip(Token.Type.Symbol.ARROW)
             
-            var body = stmt()
-            
-            if (body is Stmt.Expression) {
-                body = Stmt.Return(body.location, body.expr)
-            }
+            val body = if (match(Token.Type.Symbol.LEFT_BRACE)) blockStmt() else Stmt.Return(here(), expr());
             
             return Expr.Lambda(location, Stmt.Function(location, "", Expr.Name.none, emptyList(), body))
         }
         
         var expr = expr()
         
-        if (match(Token.Type.Symbol.COMMA) && expr is Expr.Name) {
+        if (match(Token.Type.Symbol.COMMA)) {
+            if (expr !is Expr.Name) TODO()
+            
             val params = mutableListOf(expr)
             
             while (skip(Token.Type.Symbol.COMMA)) {
@@ -651,17 +645,13 @@ class Parser(private val lexer: Lexer) {
             
             mustSkip(Token.Type.Symbol.RIGHT_PAREN)
             mustSkip(Token.Type.Symbol.ARROW)
-            
-            var body = stmt()
-            
-            if (body is Stmt.Expression) {
-                body = Stmt.Return(body.location, body.expr)
-            }
+    
+            val body = if (match(Token.Type.Symbol.LEFT_BRACE)) blockStmt() else Stmt.Return(here(), expr());
             
             expr = Expr.Lambda(location, Stmt.Function(location, "", Expr.Name.none, params, body))
         }
         else {
-            TODO()
+            mustSkip(Token.Type.Symbol.RIGHT_PAREN)
         }
         
         return expr

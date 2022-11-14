@@ -26,7 +26,7 @@ interface Link {
     
     fun finalize()
     
-    class Function(val arity: Int, private val method: (Runtime, LinkData) -> Result<*>) {
+    class Function(private val arity: Int, private val method: (Runtime, LinkData) -> Result<*>) {
         companion object {
             fun create(arity: Int = 0, method: (runtime: Runtime, data: LinkData) -> Result<*>) =
                 Function(arity, method)
