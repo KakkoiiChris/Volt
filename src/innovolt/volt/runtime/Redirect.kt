@@ -1,6 +1,7 @@
 package innovolt.volt.runtime
 
 import innovolt.volt.lexer.Location
+import innovolt.volt.parser.Expr
 
 /**
  * Volt
@@ -14,9 +15,9 @@ import innovolt.volt.lexer.Location
  * @author Christian Bryce Alexander
  */
 sealed class Redirect(val origin: Location) : Throwable() {
-    class Break(origin: Location) : Redirect(origin)
+    class Break(origin: Location, val label:Expr.Name) : Redirect(origin)
     
-    class Continue(origin: Location) : Redirect(origin)
+    class Continue(origin: Location, val label:Expr.Name) : Redirect(origin)
     
     class Throw(origin: Location, val value: Result<*>) : Redirect(origin)
     

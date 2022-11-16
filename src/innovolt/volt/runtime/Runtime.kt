@@ -484,9 +484,17 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
                 visit(stmt.body)
             }
             catch (`break`: Redirect.Break) {
+                if (`break`.label != stmt.label) {
+                    throw `break`
+                }
+                
                 break
             }
             catch (`continue`: Redirect.Continue) {
+                if (`continue`.label != stmt.label) {
+                    throw `continue`
+                }
+                
                 continue
             }
         }
@@ -498,9 +506,17 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
                 visit(stmt.body)
             }
             catch (`break`: Redirect.Break) {
+                if (`break`.label != stmt.label) {
+                    throw `break`
+                }
+    
                 break
             }
             catch (`continue`: Redirect.Continue) {
+                if (`continue`.label != stmt.label) {
+                    throw `continue`
+                }
+    
                 continue
             }
             
@@ -523,9 +539,17 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
                     visit(stmt.body)
                 }
                 catch (`break`: Redirect.Break) {
+                    if (`break`.label != stmt.label) {
+                        throw `break`
+                    }
+    
                     break
                 }
                 catch (`continue`: Redirect.Continue) {
+                    if (`continue`.label != stmt.label) {
+                        throw `continue`
+                    }
+    
                     continue
                 }
             }
@@ -568,11 +592,11 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
     }
     
     override fun visitBreakStmt(stmt: Stmt.Break) {
-        throw Redirect.Break(stmt.location)
+        throw Redirect.Break(stmt.location, stmt.label)
     }
     
     override fun visitContinueStmt(stmt: Stmt.Continue) {
-        throw Redirect.Continue(stmt.location)
+        throw Redirect.Continue(stmt.location, stmt.label)
     }
     
     override fun visitThrowStmt(stmt: Stmt.Throw) {

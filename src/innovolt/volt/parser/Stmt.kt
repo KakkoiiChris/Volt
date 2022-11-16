@@ -66,17 +66,17 @@ sealed interface Stmt {
             visitor.visitIfStmt(this)
     }
     
-    class While(override val location: Location, val condition: Expr, val body: Stmt) : Stmt {
+    class While(override val location: Location, val condition: Expr, val label: Expr.Name, val body: Stmt) : Stmt {
         override fun <X> accept(visitor: Visitor<X>): X =
             visitor.visitWhileStmt(this)
     }
     
-    class Do(override val location: Location, val body: Stmt, val condition: Expr) : Stmt {
+    class Do(override val location: Location, val label: Expr.Name, val body: Stmt, val condition: Expr) : Stmt {
         override fun <X> accept(visitor: Visitor<X>): X =
             visitor.visitDoStmt(this)
     }
     
-    class For(override val location: Location, val pointer: Expr.Name, val iterable: Expr, val body: Stmt) : Stmt {
+    class For(override val location: Location, val pointer: Expr.Name, val iterable: Expr, val label: Expr.Name, val body: Stmt) : Stmt {
         override fun <X> accept(visitor: Visitor<X>): X =
             visitor.visitForStmt(this)
     }
@@ -86,12 +86,12 @@ sealed interface Stmt {
             visitor.visitTryStmt(this)
     }
     
-    class Break(override val location: Location) : Stmt {
+    class Break(override val location: Location, val label: Expr.Name) : Stmt {
         override fun <X> accept(visitor: Visitor<X>): X =
             visitor.visitBreakStmt(this)
     }
     
-    class Continue(override val location: Location) : Stmt {
+    class Continue(override val location: Location, val label: Expr.Name) : Stmt {
         override fun <X> accept(visitor: Visitor<X>): X =
             visitor.visitContinueStmt(this)
     }

@@ -305,7 +305,7 @@ class Lexer(private val source: Source) : Iterator<Token> {
                 }
             }
         }
-    
+        
         mustSkip(delimiter)
         
         val type = Token.Type.Value(result)
@@ -388,6 +388,8 @@ class Lexer(private val source: Source) : Iterator<Token> {
             skip('?') -> Token.Type.Symbol.QUESTION
             
             skip('.') -> Token.Type.Symbol.DOT
+            
+            skip('@') -> Token.Type.Symbol.AT
             
             skip('(') -> Token.Type.Symbol.LEFT_PAREN
             

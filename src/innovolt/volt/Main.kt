@@ -2,6 +2,7 @@ package innovolt.volt
 
 import innovolt.volt.runtime.Runtime
 import innovolt.volt.util.Source
+import innovolt.volt.util.VoltError
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
@@ -35,9 +36,16 @@ private fun repl() {
             
             val text = readln().takeIf { it.isNotEmpty() } ?: break
             
-            val source = Source("REPL", text)
-            
-            exec(runtime, source)
+            try {
+                val source = Source("REPL", text)
+                
+                exec(runtime, source)
+            }
+            catch (error: VoltError) {
+                val source = Source("REPL", "return $text;")
+                
+                exec(runtime, source)
+            }
         }
         while (true)
     }
@@ -62,7 +70,14 @@ private fun file(path: String) {
 private fun exec(runtime: Runtime, source: Source) {
     val program = source.compile()
     
-    val (result, time) = measureTimedValue { runtime.run(program) }
+    val (result, time) = measureTimedValue {
+        try {
+            runtime.run(program)
+        }
+        catch (error: VoltError) {
+            error.printStackTrace()
+        }
+    }
     
     println("Done: $result (${time.inWholeNanoseconds / 1E6} ms)")
 }

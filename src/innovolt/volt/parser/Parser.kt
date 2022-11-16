@@ -168,15 +168,19 @@ class Parser(private val lexer: Lexer) {
         
         mustSkip(Token.Type.Symbol.RIGHT_PAREN)
         
+        val label = if (skip(Token.Type.Symbol.AT)) nameExpr() else Expr.Name.none
+        
         val body = stmt()
         
-        return Stmt.While(location, condition, body)
+        return Stmt.While(location, condition, label, body)
     }
     
     private fun doStmt(): Stmt.Do {
         val location = here()
         
         mustSkip(Token.Type.Keyword.DO)
+        
+        val label = if (skip(Token.Type.Symbol.AT)) nameExpr() else Expr.Name.none
         
         val body = stmt()
         
@@ -188,7 +192,7 @@ class Parser(private val lexer: Lexer) {
         mustSkip(Token.Type.Symbol.RIGHT_PAREN)
         mustSkip(Token.Type.Symbol.SEMICOLON)
         
-        return Stmt.Do(location, body, condition)
+        return Stmt.Do(location, label, body, condition)
     }
     
     private fun forStmt(): Stmt.For {
@@ -205,9 +209,11 @@ class Parser(private val lexer: Lexer) {
         
         mustSkip(Token.Type.Symbol.RIGHT_PAREN)
         
+        val label = if (skip(Token.Type.Symbol.AT)) nameExpr() else Expr.Name.none
+        
         val body = stmt()
         
-        return Stmt.For(location, pointer, iterable, body)
+        return Stmt.For(location, pointer, iterable, label, body)
     }
     
     private fun tryStmt(): Stmt.Try {
@@ -239,18 +245,20 @@ class Parser(private val lexer: Lexer) {
         val location = here()
         
         mustSkip(Token.Type.Keyword.BREAK)
-        mustSkip(Token.Type.Symbol.SEMICOLON)
         
-        return Stmt.Break(location)
+        val label = if (!skip(Token.Type.Symbol.SEMICOLON)) nameExpr() else Expr.Name.none
+        
+        return Stmt.Break(location, label)
     }
     
     private fun continueStmt(): Stmt.Continue {
         val location = here()
         
         mustSkip(Token.Type.Keyword.CONTINUE)
-        mustSkip(Token.Type.Symbol.SEMICOLON)
         
-        return Stmt.Continue(location)
+        val label = if (!skip(Token.Type.Symbol.SEMICOLON)) nameExpr() else Expr.Name.none
+        
+        return Stmt.Continue(location, label)
     }
     
     private fun throwStmt(): Stmt.Throw {
@@ -610,9 +618,9 @@ class Parser(private val lexer: Lexer) {
             val lambdaLocation = here()
             
             mustSkip(Token.Type.Symbol.ARROW)
-    
-            val body = if (match(Token.Type.Symbol.LEFT_BRACE)) blockStmt() else Stmt.Return(here(), expr());
             
+            val body = if (match(Token.Type.Symbol.LEFT_BRACE)) blockStmt() else Stmt.Return(here(), expr())
+    
             expr = Expr.Lambda(lambdaLocation, Stmt.Function(lambdaLocation, "", Expr.Name.none, listOf(expr), body))
         }
         
@@ -627,8 +635,8 @@ class Parser(private val lexer: Lexer) {
         if (skip(Token.Type.Symbol.RIGHT_PAREN)) {
             mustSkip(Token.Type.Symbol.ARROW)
             
-            val body = if (match(Token.Type.Symbol.LEFT_BRACE)) blockStmt() else Stmt.Return(here(), expr());
-            
+            val body = if (match(Token.Type.Symbol.LEFT_BRACE)) blockStmt() else Stmt.Return(here(), expr())
+    
             return Expr.Lambda(location, Stmt.Function(location, "", Expr.Name.none, emptyList(), body))
         }
         
@@ -645,9 +653,9 @@ class Parser(private val lexer: Lexer) {
             
             mustSkip(Token.Type.Symbol.RIGHT_PAREN)
             mustSkip(Token.Type.Symbol.ARROW)
-    
-            val body = if (match(Token.Type.Symbol.LEFT_BRACE)) blockStmt() else Stmt.Return(here(), expr());
             
+            val body = if (match(Token.Type.Symbol.LEFT_BRACE)) blockStmt() else Stmt.Return(here(), expr())
+    
             expr = Expr.Lambda(location, Stmt.Function(location, "", Expr.Name.none, params, body))
         }
         else {

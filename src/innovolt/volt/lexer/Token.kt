@@ -62,6 +62,7 @@ data class Token(val location: Location, val type: Type) {
             DOT("."),
             COLON(":"),
             ARROW("->"),
+            AT("@"),
             LEFT_PAREN("("),
             RIGHT_PAREN(")"),
             LEFT_SQUARE("["),

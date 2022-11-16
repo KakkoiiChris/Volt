@@ -33,6 +33,10 @@ object CoreLink : Link {
             Result.Unit
         }
         
+        functions[".time"] = Link.Function.create { _, _ ->
+            Result.Number(System.nanoTime() / 1E9)
+        }
+        
         functions[".pause"] = Link.Function.create(1) { _, data ->
             val (seconds) = data.args
             

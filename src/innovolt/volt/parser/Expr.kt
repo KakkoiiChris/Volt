@@ -161,6 +161,12 @@ sealed interface Expr {
         
         override fun <X> accept(visitor: Visitor<X>): X =
             visitor.visitNameExpr(this)
+        
+        override fun equals(other: Any?): Boolean {
+            if (other !is Name) return false
+            
+            return value == other.value
+        }
     }
     
     class Value(override val location: Location, val value: Any) : Expr {
