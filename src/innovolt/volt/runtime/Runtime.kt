@@ -5,6 +5,7 @@ import innovolt.volt.linker.Linker
 import innovolt.volt.parser.Expr
 import innovolt.volt.parser.Program
 import innovolt.volt.parser.Stmt
+import innovolt.volt.util.VoltError
 import kotlin.math.pow
 
 /**
@@ -44,11 +45,11 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
         catch (`return`: Redirect.Return) {
             return `return`.value
         }
-        catch (_: Redirect.Break) {
-            TODO()
+        catch (`break`: Redirect.Break) {
+            VoltError.unhandledBreak(`break`.origin)
         }
-        catch (_: Redirect.Continue) {
-            TODO()
+        catch (`continue`: Redirect.Continue) {
+            VoltError.unhandledContinue(`continue`.origin)
         }
         
         return Result.Unit
@@ -77,7 +78,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
                 is Result.Number -> when (val right = visit(expr.right)) {
                     is Result.Number -> Result.Number(left.value + right.value)
                     
-                    else             -> TODO()
+                    else             -> TODO()//VoltError.forRuntime("")
                 }
                 
                 else             -> TODO()
@@ -509,14 +510,14 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
                 if (`break`.label != stmt.label) {
                     throw `break`
                 }
-    
+                
                 break
             }
             catch (`continue`: Redirect.Continue) {
                 if (`continue`.label != stmt.label) {
                     throw `continue`
                 }
-    
+                
                 continue
             }
             
@@ -542,14 +543,14 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
                     if (`break`.label != stmt.label) {
                         throw `break`
                     }
-    
+                    
                     break
                 }
                 catch (`continue`: Redirect.Continue) {
                     if (`continue`.label != stmt.label) {
                         throw `continue`
                     }
-    
+                    
                     continue
                 }
             }

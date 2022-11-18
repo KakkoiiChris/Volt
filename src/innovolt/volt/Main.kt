@@ -68,16 +68,18 @@ private fun file(path: String) {
 
 @OptIn(ExperimentalTime::class)
 private fun exec(runtime: Runtime, source: Source) {
-    val program = source.compile()
-    
-    val (result, time) = measureTimedValue {
-        try {
+    try {
+        val program = source.compile()
+        
+        val (result, time) = measureTimedValue {
             runtime.run(program)
         }
-        catch (error: VoltError) {
-            error.printStackTrace()
-        }
+        
+        println("Done: $result (${time.inWholeNanoseconds / 1E6} ms)")
     }
-    
-    println("Done: $result (${time.inWholeNanoseconds / 1E6} ms)")
+    catch (error: VoltError) {
+        error.printStackTrace()
+        
+        Thread.sleep(25)
+    }
 }

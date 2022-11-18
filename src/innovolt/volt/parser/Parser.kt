@@ -38,8 +38,8 @@ class Parser(private val lexer: Lexer) {
     private fun match(type: Token.Type) =
         token.type == type
     
-    private fun <X : Token.Type> match(clazz: KClass<X>) =
-        clazz.isInstance(token.type)
+    private fun <X : Token.Type> match(`class`: KClass<X>) =
+        `class`.isInstance(token.type)
     
     private fun matchAny(vararg types: Token.Type): Boolean {
         for (type in types) {
@@ -65,8 +65,8 @@ class Parser(private val lexer: Lexer) {
         }
         else false
     
-    private fun <X : Token.Type> skip(clazz: KClass<X>) =
-        if (match(clazz)) {
+    private fun <X : Token.Type> skip(`class`: KClass<X>) =
+        if (match(`class`)) {
             step()
             
             true
@@ -75,13 +75,13 @@ class Parser(private val lexer: Lexer) {
     
     private fun mustSkip(type: Token.Type) {
         if (!skip(type)) {
-            VoltError.forParser("Token type '${token.type}' is invalid; expected $type!", here())
+            VoltError.invalidTokenType(token.type, type, here())
         }
     }
     
-    private fun <X : Token.Type> mustSkip(clazz: KClass<X>) {
-        if (!skip(clazz)) {
-            VoltError.forParser("Token type '${token.type}' is invalid; expected $clazz!", here())
+    private fun <X : Token.Type> mustSkip(`class`: KClass<X>) {
+        if (!skip(`class`)) {
+            VoltError.invalidTokenType(token.type, `class`, here())
         }
     }
     
@@ -376,14 +376,14 @@ class Parser(private val lexer: Lexer) {
                 
                 is Expr.GetIndex  -> Expr.SetIndex(symbol.location, target.target, target.index, ternaryExpr())
                 
-                else              -> TODO()
+                else              -> VoltError.invalidAssignmentTarget(target.location)
             }
         }
         
         val operator = when (symbol.type) {
             Token.Type.Symbol.PLUS_EQUAL    -> Expr.Binary.Operator.ADD
             
-            Token.Type.Symbol.DASH          -> Expr.Binary.Operator.SUBTRACT
+            Token.Type.Symbol.DASH_EQUAL    -> Expr.Binary.Operator.SUBTRACT
             
             Token.Type.Symbol.STAR_EQUAL    -> Expr.Binary.Operator.MULTIPLY
             
@@ -393,7 +393,7 @@ class Parser(private val lexer: Lexer) {
             
             Token.Type.Symbol.CARET_EQUAL   -> Expr.Binary.Operator.EXPONENTIATE
             
-            else                            -> VoltError.forParser("Token type '$symbol' is not a valid assignment operator", symbol.location)
+            else                            -> error("/!\\ BROKEN ASSIGNMENT OPERATOR /!\\")
         }
         
         val value = Expr.Binary(symbol.location, operator, target, ternaryExpr())
@@ -405,7 +405,7 @@ class Parser(private val lexer: Lexer) {
             
             is Expr.GetIndex  -> Expr.SetIndex(symbol.location, target.target, target.index, value)
             
-            else              -> TODO()
+            else              -> VoltError.invalidAssignmentTarget(target.location)
         }
     }
     
@@ -590,7 +590,7 @@ class Parser(private val lexer: Lexer) {
                     Expr.Invoke(symbol.location, expr, arguments)
                 }
                 
-                else                                -> VoltError.forParser("Invalid postfix", symbol.location)//TODO
+                else                                -> error("/!\\ BROKEN POSTFIX OPERATOR /!\\")
             }
         }
         
@@ -609,18 +609,18 @@ class Parser(private val lexer: Lexer) {
             
             match(Token.Type.Value::class)       -> valueExpr()
             
-            else                                 -> TODO()
+            else                                 -> VoltError.invalidTerminal(token.type, here())
         }
         
         if (match(Token.Type.Symbol.ARROW)) {
-            if (expr !is Expr.Name) TODO()
+            if (expr !is Expr.Name) VoltError.invalidLambdaParameter(expr.location)
             
             val lambdaLocation = here()
             
             mustSkip(Token.Type.Symbol.ARROW)
             
             val body = if (match(Token.Type.Symbol.LEFT_BRACE)) blockStmt() else Stmt.Return(here(), expr())
-    
+            
             expr = Expr.Lambda(lambdaLocation, Stmt.Function(lambdaLocation, "", Expr.Name.none, listOf(expr), body))
         }
         
@@ -636,14 +636,14 @@ class Parser(private val lexer: Lexer) {
             mustSkip(Token.Type.Symbol.ARROW)
             
             val body = if (match(Token.Type.Symbol.LEFT_BRACE)) blockStmt() else Stmt.Return(here(), expr())
-    
+            
             return Expr.Lambda(location, Stmt.Function(location, "", Expr.Name.none, emptyList(), body))
         }
         
         var expr = expr()
         
         if (match(Token.Type.Symbol.COMMA)) {
-            if (expr !is Expr.Name) TODO()
+            if (expr !is Expr.Name) VoltError.invalidLambdaParameter(expr.location)
             
             val params = mutableListOf(expr)
             
@@ -655,7 +655,7 @@ class Parser(private val lexer: Lexer) {
             mustSkip(Token.Type.Symbol.ARROW)
             
             val body = if (match(Token.Type.Symbol.LEFT_BRACE)) blockStmt() else Stmt.Return(here(), expr())
-    
+            
             expr = Expr.Lambda(location, Stmt.Function(location, "", Expr.Name.none, params, body))
         }
         else {

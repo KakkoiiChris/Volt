@@ -126,14 +126,14 @@ class Lexer(private val source: Source) : Iterator<Token> {
     
     private fun mustSkip(char: Char, offset: Int = 0) {
         if (!skip(char, offset)) {
-            VoltError.forLexer("Character '${peek()}' is invalid; expected $char!", here())
+            VoltError.invalidCharacter(peek(), char, here())
         }
     }
     
     @Suppress("SameParameterValue")
     private fun mustSkip(string: String) {
         if (!skip(string)) {
-            VoltError.forLexer("Sequence '${look(string.length)}' is invalid; expected $string!", here())
+            VoltError.invalidString(look(string.length), string, here())
         }
     }
     
@@ -145,9 +145,6 @@ class Lexer(private val source: Source) : Iterator<Token> {
     
     private fun Char.isWord() =
         isLetterOrDigit() || this == '_'
-    
-    private fun Char.isEndOfLine() =
-        this in "\r\n"
     
     private fun skipWhitespace() {
         while (match { it.isWhitespace() }) {
@@ -233,15 +230,17 @@ class Lexer(private val source: Source) : Iterator<Token> {
     }
     
     private fun unicode(size: Int): Char {
-        val location = here()
-        
         val result = buildString {
             repeat(size) {
+                if (!match { it.isDigit() || it in "ABCDEFabcdef" }) {
+                    VoltError.invalidHexadecimal(peek(), here())
+                }
+                
                 take()
             }
         }
         
-        return result.toIntOrNull(16)?.toChar() ?: VoltError.forLexer("Unicode value '$result' is invalid!", location)
+        return result.toInt(16).toChar()
     }
     
     private fun escape(delimiter: Char): Char {
@@ -276,7 +275,7 @@ class Lexer(private val source: Source) : Iterator<Token> {
             
             skip(delimiter) -> delimiter
             
-            else            -> VoltError.forLexer("Character escape '\\${peek()}' is invalid!", here())
+            else            -> VoltError.invalidEscape(peek(), here())
         }
     }
     
@@ -290,17 +289,13 @@ class Lexer(private val source: Source) : Iterator<Token> {
         val result = buildString {
             while (!match(delimiter)) {
                 if (match(NUL)) {
-                    VoltError.forLexer("Reached end of file inside of a string!", location)
+                    VoltError.unclosedString(location)
                 }
                 
                 if (skip('\\')) {
                     append(escape(delimiter))
                 }
                 else {
-                    if (match { it.isEndOfLine() }) {
-                        VoltError.forLexer("String cannot be multiline; use verbatim string literal instead!", location)
-                    }
-                    
                     take()
                 }
             }
@@ -409,7 +404,7 @@ class Lexer(private val source: Source) : Iterator<Token> {
             
             skip(';') -> Token.Type.Symbol.SEMICOLON
             
-            else      -> VoltError.forLexer("Character '${peek()}' is invalid!", here())
+            else      -> VoltError.illegalCharacter(peek(), here())
         }
         
         return Token(location, type)
