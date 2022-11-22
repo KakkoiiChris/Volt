@@ -2,6 +2,11 @@ package innovolt.volt.util
 
 import innovolt.volt.lexer.Location
 import innovolt.volt.lexer.Token
+import innovolt.volt.parser.Expr
+import innovolt.volt.parser.Stmt
+import innovolt.volt.runtime.Callable
+import innovolt.volt.runtime.Result
+import innovolt.volt.runtime.VoltFunction
 import kotlin.reflect.KClass
 
 /**
@@ -15,7 +20,7 @@ import kotlin.reflect.KClass
  *
  * @author Christian Bryce Alexander
  */
-class VoltError(stage: String, msg: String, loc: Location) : Exception("Volt $stage Error: $msg!$loc") {
+class VoltError(stage: String, msg: String, loc: Location) : RuntimeException("Volt $stage Error: $msg!$loc") {
     companion object {
         private fun forLexer(message: String, location: Location): Nothing =
             throw VoltError("Lexer", message, location)
@@ -59,13 +64,52 @@ class VoltError(stage: String, msg: String, loc: Location) : Exception("Volt $st
         private fun forRuntime(message: String, location: Location): Nothing =
             throw VoltError("Runtime", message, location)
         
-        fun unhandledBreak(location: Location):Nothing=
+        fun unhandledBreak(location: Location): Nothing =
             forRuntime("Unhandled break statement", location)
-    
-        fun unhandledContinue(location: Location):Nothing=
-            forRuntime("Unhandled break statement", location)
+        
+        fun unhandledContinue(location: Location): Nothing =
+            forRuntime("Unhandled continue statement", location)
+        
+        fun invalidCondition(location: Location): Nothing =
+            forRuntime("Condition does not result in a boolean value", location)
+        
+        fun invalidLeftOperand(operand: Result<*>, operator: Expr.Binary.Operator, location: Location): Nothing =
+            forRuntime("Left operand '$operand' for '${operator.type} operator is invalid", location)
+        
+        fun invalidRightOperand(operand: Result<*>, operator: Expr.Binary.Operator, location: Location): Nothing =
+            forRuntime("Right operand '$operand' for '${operator.type} operator is invalid", location)
+        
+        fun invalidOperand(operand: Result<*>, operator: Expr.Prefix.Operator, location: Location): Nothing =
+            forRuntime("Operand '$operand' for '${operator.type} operator is invalid", location)
+        
+        fun nonAccessedValue(value: Result<*>, location: Location): Nothing =
+            forRuntime("Value of type '${value.javaClass.simpleName}' cannot be accessed", location)
+        
+        fun invalidIndex(target: Result<*>, index: Result<*>, location: Location): Nothing =
+            forRuntime("Value of type '${target.javaClass.simpleName}' cannot be indexed by a value of type '${index.javaClass.simpleName}'", location)
+        
+        fun nonIndexedValue(value: Result<*>, location: Location): Nothing =
+            forRuntime("Value of type '${value.javaClass.simpleName}' cannot be indexed", location)
+        
+        fun nonInvokedValue(value: Result<*>, location: Location): Nothing =
+            forRuntime("Value of type '${value.javaClass.simpleName}' cannot be invoked", location)
+        
+        fun argumentResolution(callable: Callable, location: Location): Nothing =
+            forRuntime("Couldn't resolve callable '$callable'", location)
+        
+        fun argumentLinkResolution(function: VoltFunction, location: Location): Nothing =
+            forRuntime("Couldn't resolve link for function '${function.name}'", location)
+        
+        fun nonIterableValue(value: Result<*>, location: Location): Nothing =
+            forRuntime("Value of type '${value.javaClass.simpleName}' cannot be iterated over", location)
+        
+        fun noLink(function: Stmt.Function, location: Location): Nothing =
+            forRuntime("No link exists for function '${function.name}'", location)
         
         private fun forLinker(message: String, location: Location): Nothing =
             throw VoltError("Runtime", message, location)
+        
+        fun invalidLinkArgument(path: String, name: String, expectedType: String): Nothing =
+            forLinker("Function '$path' link argument '$name' expects a value of type '$expectedType'", Location.none)
     }
 }

@@ -39,7 +39,7 @@ interface Result<X> {
                 
                 kotlin.Unit                -> Unit
                 
-                else                       -> TODO()
+                else                       -> null
             }
     }
     

@@ -2,6 +2,7 @@ package innovolt.volt.linker
 
 import innovolt.volt.runtime.Result
 import innovolt.volt.util.Source
+import innovolt.volt.util.VoltError
 import kotlin.system.exitProcess
 
 /**
@@ -40,7 +41,7 @@ object CoreLink : Link {
         functions[".pause"] = Link.Function.create(1) { _, data ->
             val (seconds) = data.args
             
-            seconds as? Result.Number ?: TODO()
+            seconds as? Result.Number ?: VoltError.invalidLinkArgument("pause", "seconds", "Number")
             
             Thread.sleep((seconds.value * 1000).toLong())
             
@@ -50,7 +51,7 @@ object CoreLink : Link {
         functions[".exit"] = Link.Function.create(1) { _, data ->
             val (code) = data.args
             
-            code as? Result.Number ?: TODO()
+            code as? Result.Number ?: VoltError.invalidLinkArgument("exit", "code", "Number")
             
             exitProcess(code.value.toInt())
         }

@@ -42,9 +42,16 @@ private fun repl() {
                 exec(runtime, source)
             }
             catch (error: VoltError) {
-                val source = Source("REPL", "return $text;")
-                
-                exec(runtime, source)
+                try {
+                    val source = Source("REPL", "return $text;")
+                    
+                    exec(runtime, source)
+                }
+                catch (error: VoltError) {
+                    error.printStackTrace()
+                    
+                    Thread.sleep(25)
+                }
             }
         }
         while (true)
@@ -68,18 +75,12 @@ private fun file(path: String) {
 
 @OptIn(ExperimentalTime::class)
 private fun exec(runtime: Runtime, source: Source) {
-    try {
-        val program = source.compile()
-        
-        val (result, time) = measureTimedValue {
-            runtime.run(program)
-        }
-        
-        println("Done: $result (${time.inWholeNanoseconds / 1E6} ms)")
+    
+    val program = source.compile()
+    
+    val (result, time) = measureTimedValue {
+        runtime.run(program)
     }
-    catch (error: VoltError) {
-        error.printStackTrace()
-        
-        Thread.sleep(25)
-    }
+    
+    println("Done: $result (${time.inWholeNanoseconds / 1E6} ms)")
 }
