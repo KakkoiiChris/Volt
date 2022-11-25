@@ -1,8 +1,11 @@
 package innovolt.volt.linker
 
+import innovolt.volt.lexer.Location
+import innovolt.volt.parser.Expr
 import innovolt.volt.runtime.Result
 import innovolt.volt.util.Source
 import innovolt.volt.util.VoltError
+import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
 /**
@@ -44,6 +47,20 @@ object CoreLink : Link {
             seconds as? Result.Number ?: VoltError.invalidLinkArgument("pause", "seconds", "Number")
             
             Thread.sleep((seconds.value * 1000).toLong())
+            
+            Result.Unit
+        }
+        
+        functions[".run"] = Link.Function.create(1) { runtime, data ->
+            val (handler) = data.args
+            
+            handler as? Result.Function ?: VoltError.invalidLinkArgument("run", "handler", "Function")
+            
+            val invoke = Expr.Invoke(Location.none, Expr.Value(Location.none, handler), emptyList())
+            
+            thread {
+                runtime.visit(invoke)
+            }
             
             Result.Unit
         }

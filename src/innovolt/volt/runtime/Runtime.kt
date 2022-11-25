@@ -411,7 +411,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
     }
     
     private fun invokeClass(`class`: VoltClass, variables: List<Pair<Expr.Name, Result<*>>>): Result.Instance {
-        val instance = VoltInstance(`class`)
+        val instance = VoltInstance(`class`, this)
         
         try {
             memory.push(instance)
