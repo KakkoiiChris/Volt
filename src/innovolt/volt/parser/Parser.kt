@@ -116,6 +116,8 @@ class Parser(private val lexer: Lexer) {
             
             match(Token.Type.Keyword.CLASS)     -> classStmt()
             
+            match(Token.Type.Keyword.IMPORT)->importStmt()
+            
             else                                -> expressionStmt()
         }
     
@@ -338,6 +340,18 @@ class Parser(private val lexer: Lexer) {
         val init = if (skip(Token.Type.Symbol.SEMICOLON)) Stmt.Block(Location.none, emptyList()) else blockStmt()
         
         return Stmt.Class(location, name, params, init)
+    }
+    
+    private fun importStmt():Stmt.Import{
+        val location = here()
+        
+        mustSkip(Token.Type.Keyword.IMPORT)
+        
+        val name = nameExpr()
+        
+        mustSkip(Token.Type.Symbol.SEMICOLON)
+        
+        return Stmt.Import(location, name)
     }
     
     private fun expressionStmt(): Stmt.Expression {

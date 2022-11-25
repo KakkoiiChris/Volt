@@ -48,6 +48,8 @@ sealed interface Stmt {
         
         fun visitClassStmt(stmt: Class): X
         
+        fun visitImportStmt(stmt: Import): X
+        
         fun visitExpressionStmt(stmt: Expression): X
     }
     
@@ -116,6 +118,11 @@ sealed interface Stmt {
     class Class(override val location: Location, val name: Expr.Name, val params: List<Expr.Name>, val init: Block) : Stmt {
         override fun <X> accept(visitor: Visitor<X>): X =
             visitor.visitClassStmt(this)
+    }
+    
+    class Import(override val location: Location, val name: Expr.Name) : Stmt {
+        override fun <X> accept(visitor: Visitor<X>): X =
+            visitor.visitImportStmt(this)
     }
     
     class Expression(override val location: Location, val expr: Expr) : Stmt {

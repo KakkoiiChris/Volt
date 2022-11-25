@@ -1,5 +1,10 @@
 package innovolt.volt.linker
 
+import innovolt.volt.linker.libraries.Core
+import innovolt.volt.parser.Expr
+import innovolt.volt.util.Source
+import innovolt.volt.util.VoltError
+
 /**
  * Volt
  *
@@ -12,24 +17,27 @@ package innovolt.volt.linker
  * @author Christian Bryce Alexander
  */
 class Linker {
-    private val links = mutableListOf<Link>()
+    private val links = mutableMapOf<String, Link>()
     
     private val functions = mutableMapOf<String, Link.Function>()
     private val classes = mutableMapOf<String, Link.Class>()
     
     init {
-        addLink(CoreLink)
+        this += Core
     }
     
-    fun addLink(link: Link) {
-        links += link
+    operator fun plusAssign(link: Link) {
+        links[link.name] = link
+    }
+    
+    fun import(name: Expr.Name): Source {
+        val link = links[name.value] ?: VoltError.missingLink(name.value, name.location)
         
         functions.putAll(link.getFunctions())
         classes.putAll(link.getClasses())
+        
+        return link.source
     }
-    
-    fun getSources() =
-        links.map { it.source }
     
     fun getFunction(path: String) =
         functions[path]

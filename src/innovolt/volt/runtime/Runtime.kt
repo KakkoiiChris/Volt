@@ -6,6 +6,7 @@ import innovolt.volt.parser.Expr
 import innovolt.volt.parser.Program
 import innovolt.volt.parser.Stmt
 import innovolt.volt.util.VoltError
+import innovolt.volt.util.toName
 import kotlin.math.pow
 
 /**
@@ -25,11 +26,11 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
     fun start() {
         memory.push()
         
-        for (source in linker.getSources()) {
-            for (stmt in source.compile()) {
-                visit(stmt)
-            }
-        }
+        //val source = linker.import("core".toName())
+        //
+        //for (stmt in source.compile()) {
+        //    visit(stmt)
+        //}
     }
     
     fun stop() {
@@ -638,6 +639,14 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
     
     override fun visitClassStmt(stmt: Stmt.Class) {
         memory[stmt.name.value] = Result.Class(VoltClass(stmt, memory.peek()))
+    }
+    
+    override fun visitImportStmt(stmt: Stmt.Import) {
+        val source = linker.import(stmt.name)
+    
+        for (subStmt in source.compile()) {
+            visit(subStmt)
+        }
     }
     
     override fun visitExpressionStmt(stmt: Stmt.Expression) {

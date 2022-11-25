@@ -14,6 +14,7 @@ package innovolt.volt.lexer
 data class Token(val location: Location, val type: Type) {
     sealed interface Type {
         enum class Keyword : Type {
+            IMPORT,
             CLASS,
             FUNCTION,
             IF,

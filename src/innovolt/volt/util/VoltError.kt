@@ -111,5 +111,8 @@ class VoltError(stage: String, msg: String, loc: Location) : RuntimeException("V
         
         fun invalidLinkArgument(path: String, name: String, expectedType: String): Nothing =
             forLinker("Function '$path' link argument '$name' expects a value of type '$expectedType'", Location.none)
+        
+        fun missingLink(name: String, location: Location): Nothing =
+            forLexer("No link found for '$name' library", location)
     }
 }
