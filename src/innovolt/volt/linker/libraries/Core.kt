@@ -1,6 +1,7 @@
-package innovolt.volt.linker
+package innovolt.volt.linker.libraries
 
 import innovolt.volt.lexer.Location
+import innovolt.volt.linker.Link
 import innovolt.volt.parser.Expr
 import innovolt.volt.runtime.Result
 import innovolt.volt.util.Source
@@ -19,7 +20,7 @@ import kotlin.system.exitProcess
  *
  * @author Christian Bryce Alexander
  */
-object CoreLink : Link {
+object Core : Link {
     override val name = "core"
     
     override val source = Source.readLocal("/core.volt")
@@ -33,7 +34,7 @@ object CoreLink : Link {
         
         functions[".write"] = Link.Function.create(1) { _, data ->
             println(data.args[0])
-            
+    
             Result.Unit
         }
         
@@ -43,33 +44,33 @@ object CoreLink : Link {
         
         functions[".pause"] = Link.Function.create(1) { _, data ->
             val (seconds) = data.args
-            
+    
             seconds as? Result.Number ?: VoltError.invalidLinkArgument("pause", "seconds", "Number")
-            
+    
             Thread.sleep((seconds.value * 1000).toLong())
-            
+    
             Result.Unit
         }
         
         functions[".run"] = Link.Function.create(1) { runtime, data ->
             val (handler) = data.args
-            
+    
             handler as? Result.Function ?: VoltError.invalidLinkArgument("run", "handler", "Function")
-            
+    
             val invoke = Expr.Invoke(Location.none, Expr.Value(Location.none, handler), emptyList())
-            
+    
             thread {
                 runtime.visit(invoke)
             }
-            
+    
             Result.Unit
         }
         
         functions[".exit"] = Link.Function.create(1) { _, data ->
             val (code) = data.args
-            
+    
             code as? Result.Number ?: VoltError.invalidLinkArgument("exit", "code", "Number")
-            
+    
             exitProcess(code.value.toInt())
         }
         
