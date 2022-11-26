@@ -1,6 +1,7 @@
 package innovolt.volt.linker
 
 import innovolt.volt.linker.libraries.Core
+import innovolt.volt.linker.libraries.Math
 import innovolt.volt.parser.Expr
 import innovolt.volt.util.Source
 import innovolt.volt.util.VoltError
@@ -24,6 +25,7 @@ class Linker {
     
     init {
         this += Core
+        this += Math
     }
     
     operator fun plusAssign(link: Link) {

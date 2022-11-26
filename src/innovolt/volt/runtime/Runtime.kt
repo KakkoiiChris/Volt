@@ -26,11 +26,11 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
     fun start() {
         memory.push()
         
-        //val source = linker.import("core".toName())
-        //
-        //for (stmt in source.compile()) {
-        //    visit(stmt)
-        //}
+        val source = linker.import("core".toName())
+        
+        for (stmt in source.compile()) {
+            visit(stmt)
+        }
     }
     
     fun stop() {

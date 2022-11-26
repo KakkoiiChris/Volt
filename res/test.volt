@@ -1,3 +1,7 @@
-import core;
+{
+    import math;
 
-forEach([1,2,3,4,5], write);
+    write(abs(-5));
+}
+
+write(abs(-5));
