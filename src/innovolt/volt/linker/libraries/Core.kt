@@ -41,6 +41,16 @@ object Core : Link {
             Result.Number(System.nanoTime() / 1E9)
         }
         
+        addFunction(".add", 2) {_,data->
+            val (list, element) = data.args
+            
+            list as? Result.List?:VoltError.invalidLinkArgument("add", "list", "List")
+            
+            list.value.add(element)
+            
+            Result.Unit
+        }
+        
         addFunction(".pause", 1) { _, data ->
             val (seconds) = data.args
             

@@ -16,7 +16,7 @@ import innovolt.volt.parser.Stmt
  *
  * @author Christian Bryce Alexander
  */
-class VoltFunction(
+class VoltFunction private constructor(
     val location: Location,
     val name: Expr.Name,
     override val params: List<Expr.Name>,

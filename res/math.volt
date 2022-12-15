@@ -1,6 +1,28 @@
+/*********************************************
+ * :::     :::  ::::::::  :::    ::::::::::: *
+ * :+:     :+: :+:    :+: :+:        :+:     *
+ * +:+     +:+ +:+    +:+ +:+        +:+     *
+ * +#+     +:+ +#+    +:+ +#+        +#+     *
+ *  +#+   +#+  +#+    +#+ +#+        +#+     *
+ *   #+#+#+#   #+#    #+# #+#        #+#     *
+ *     ###      ########  ########## ###     *
+ *                                           *
+ *       Lightweight Scripting Language      *
+ *********************************************/
+ 
+// Constants
+ 
+MIN_NUMBER        = 4.9e-324;
+MAX_VALUE         = 1.7976931348623157e308;
+POSITIVE_INFINITY = 1.0 / 0.0;
+NEGATIVE_INFINITY = -1.0 / 0.0;
+NaN               = -(0.0 / 0.0);
+
 PI  = 3.14159265358979323846;
 TAU = PI * 2;
 E   = 2.7182818284590452;
+
+// Functions
 
 function sin(n);
 
@@ -32,6 +54,10 @@ function hypot(x, y);
 
 function sqrt(n);
 
+function cbrt(n);
+
+function pow(n, exponent);
+
 function exp(n);
 
 function expm1(n);
@@ -56,15 +82,11 @@ function round(n);
 
 function abs(n);
 
-function sign(n);
-
 function min(a, b);
 
 function max(a, b);
 
-function cbrt(n);
-
-function pow(n, exponent);
+function sign(n);
 
 function withSign(n, sign);
 
@@ -80,14 +102,14 @@ function isNaN(n);
 
 function isFinite(n);
 
+function isInfinite(n) -> not isFinite(n);
+
+function fact(n);
+
 function comb(n, k);
 
 function perm(n, k);
 
+function sum(list);
+
 function prod(list);
-
-function gcd(list);
-
-function lcm(list);
-
-function sum(n);

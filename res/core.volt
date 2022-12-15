@@ -24,10 +24,24 @@ function time;
 
 function identity(x) -> x;
 
+// Lists
+
+function add(list, element);
+
 function forEach(list, action) {
     for (x : list) {
         action(x);
     }
+}
+
+function map(list, transform) {
+    new = [];
+    
+    for (x : list) {
+        add(new, transform(x));
+    }
+    
+    return new;
 }
 
 // Threads

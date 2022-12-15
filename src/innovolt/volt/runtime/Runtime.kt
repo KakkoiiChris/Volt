@@ -1,6 +1,5 @@
 package innovolt.volt.runtime
 
-import innovolt.volt.linker.Link
 import innovolt.volt.linker.Linker
 import innovolt.volt.parser.Expr
 import innovolt.volt.parser.Program
@@ -643,7 +642,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
     
     override fun visitImportStmt(stmt: Stmt.Import) {
         val source = linker.import(stmt.name)
-    
+        
         for (subStmt in source.compile()) {
             visit(subStmt)
         }

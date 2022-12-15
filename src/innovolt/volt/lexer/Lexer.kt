@@ -189,7 +189,7 @@ class Lexer(private val source: Source) : Iterator<Token> {
                 while (match { it.isDigit() })
             }
             
-            if (match { this in "Ee" }) {
+            if (match('E') || match('e')) {
                 take()
                 
                 do {
