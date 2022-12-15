@@ -3,6 +3,8 @@ package innovolt.volt.linker
 import innovolt.volt.linker.libraries.Core
 import innovolt.volt.linker.libraries.Math
 import innovolt.volt.parser.Expr
+import innovolt.volt.runtime.Result
+import innovolt.volt.runtime.Runtime
 import innovolt.volt.util.Source
 import innovolt.volt.util.VoltError
 
@@ -20,8 +22,8 @@ import innovolt.volt.util.VoltError
 class Linker {
     private val links = mutableMapOf<String, Link>()
     
-    private val functions = mutableMapOf<String, Link.Function>()
-    private val classes = mutableMapOf<String, Link.Class>()
+    private val functions = mutableMapOf<String, Function>()
+    private val classes = mutableMapOf<String, Class>()
     
     init {
         this += Core
@@ -35,10 +37,17 @@ class Linker {
     fun import(name: Expr.Name): Source {
         val link = links[name.value] ?: VoltError.missingLink(name.value, name.location)
         
-        functions.putAll(link.getFunctions())
-        classes.putAll(link.getClasses())
+        link.getLinks(this)
         
         return link.source
+    }
+    
+    fun addFunction(path: String, arity: Int = 0, method: (Runtime, LinkData) -> Result<*>) {
+        functions[path] = Function(path, arity, method)
+    }
+    
+    fun addClass(path: String, method: (Runtime, Result.Instance) -> Result<*>) {
+        classes[path] = Class(method)
     }
     
     fun getFunction(path: String) =
@@ -46,4 +55,18 @@ class Linker {
     
     fun getClass(path: String) =
         classes[path]
+    
+    class Function internal constructor(private val path: String, private val arity: Int, private val method: (Runtime, LinkData) -> Result<*>) {
+        fun resolve(args: List<Result<*>>) =
+            args.size == arity
+        
+        operator fun invoke(runtime: Runtime, instance: Result.Instance?, args: List<Result<*>>) =
+            method(runtime, LinkData(instance, args))
+    }
+    
+    class Class internal constructor(private val method: (Runtime, Result.Instance) -> Result<*>) {
+        operator fun invoke(runtime: Runtime, instance: Result.Instance) {
+            instance.value["\$link"] = method(runtime, instance)
+        }
+    }
 }

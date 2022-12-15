@@ -104,7 +104,7 @@ class VoltError(stage: String, msg: String, loc: Location) : RuntimeException("V
             forRuntime("Value of type '${value.javaClass.simpleName}' cannot be iterated over", location)
         
         fun noLink(function: Stmt.Function, location: Location): Nothing =
-            forRuntime("No link exists for function '${function.name}'", location)
+            forRuntime("No link exists for function '${function.name.value}'", location)
         
         private fun forLinker(message: String, location: Location): Nothing =
             throw VoltError("Runtime", message, location)

@@ -20,33 +20,7 @@ interface Link {
     
     val source: Source
     
-    fun getFunctions(): Map<String, Function>
-    
-    fun getClasses(): Map<String, Class>
+    fun getLinks(linker: Linker)
     
     fun finalize()
-    
-    class Function(private val arity: Int, private val method: (Runtime, LinkData) -> Result<*>) {
-        companion object {
-            fun create(arity: Int = 0, method: (runtime: Runtime, data: LinkData) -> Result<*>) =
-                Function(arity, method)
-        }
-        
-        fun resolve(args: List<Result<*>>) =
-            args.size == arity
-        
-        operator fun invoke(runtime: Runtime, instance: Result.Instance?, args: List<Result<*>>) =
-            method(runtime, LinkData(instance, args))
-    }
-    
-    class Class(private val method: (Runtime, Result.Instance) -> Result<*>) {
-        companion object {
-            fun create(method: (runtime: Runtime, instance: Result.Instance) -> Result<*>) =
-                Class(method)
-        }
-        
-        operator fun invoke(runtime: Runtime, instance: Result.Instance) {
-            instance.value["\$link"] = method(runtime, instance)
-        }
-    }
 }

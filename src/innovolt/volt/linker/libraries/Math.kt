@@ -1,6 +1,7 @@
 package innovolt.volt.linker.libraries
 
 import innovolt.volt.linker.Link
+import innovolt.volt.linker.Linker
 import innovolt.volt.runtime.Result
 import innovolt.volt.util.Source
 import innovolt.volt.util.VoltError
@@ -22,21 +23,15 @@ object Math : Link {
     
     override val source = Source.readLocal("/math.volt")
     
-    override fun getFunctions(): Map<String, Link.Function> {
-        val functions = mutableMapOf<String, Link.Function>()
-        
-        functions[".abs"] = Link.Function.create(1) { _, data ->
+    override fun getLinks(linker: Linker) = with(linker) {
+        addFunction(".abs", 1) { _, data ->
             val (n) = data.args
             
             n as? Result.Number ?: VoltError.invalidLinkArgument("abs", "n", "Number")
             
             Result.Number(abs(n.value))
         }
-        
-        return functions
     }
-    
-    override fun getClasses() = emptyMap<String, Link.Class>()
     
     override fun finalize() {
         TODO("Not yet implemented")

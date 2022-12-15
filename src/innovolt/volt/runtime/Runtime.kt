@@ -628,7 +628,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
     }
     
     override fun visitFunctionStmt(stmt: Stmt.Function) {
-        var link: Link.Function? = null
+        var link: Linker.Function? = null
         
         if (stmt.isLinked) {
             link = linker.getFunction(stmt.path) ?: VoltError.noLink(stmt, stmt.location)
