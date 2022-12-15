@@ -28,7 +28,7 @@ data class Source(val name: String, val text: String) {
         }
         
         fun read(path: String): Source {
-            val name = path.substring(path.lastIndexOf('/') + 1, path.indexOf('.'))
+            val name = path.substring(path.lastIndexOf('\\') + 1, path.indexOf('.'))
             
             val text = String(Files.readAllBytes(Paths.get(path)))
             

@@ -116,7 +116,7 @@ class Parser(private val lexer: Lexer) {
             
             match(Token.Type.Keyword.CLASS)     -> classStmt()
             
-            match(Token.Type.Keyword.IMPORT)->importStmt()
+            match(Token.Type.Keyword.IMPORT)    -> importStmt()
             
             else                                -> expressionStmt()
         }
@@ -342,7 +342,7 @@ class Parser(private val lexer: Lexer) {
         return Stmt.Class(location, name, params, init)
     }
     
-    private fun importStmt():Stmt.Import{
+    private fun importStmt(): Stmt.Import {
         val location = here()
         
         mustSkip(Token.Type.Keyword.IMPORT)
@@ -486,14 +486,35 @@ class Parser(private val lexer: Lexer) {
     }
     
     private fun relationalExpr(): Expr {
-        var expr = concatenationExpr()
+        var expr = pipelineExpr()
         
         while (matchAny(Token.Type.Symbol.LESS_SIGN, Token.Type.Symbol.LESS_EQUAL_SIGN, Token.Type.Symbol.GREATER_SIGN, Token.Type.Symbol.GREATER_EQUAL_SIGN)) {
             val symbol = token
             
             mustSkip(symbol.type)
             
-            expr = Expr.Binary(symbol.location, Expr.Binary.Operator.byType(symbol.type), expr, concatenationExpr())
+            expr = Expr.Binary(symbol.location, Expr.Binary.Operator.byType(symbol.type), expr, pipelineExpr())
+        }
+        
+        return expr
+    }
+    
+    private fun pipelineExpr(): Expr {
+        var expr = concatenationExpr()
+        
+        while (match(Token.Type.Symbol.DOUBLE_COLON)) {
+            val symbol = token
+            
+            mustSkip(symbol.type)
+            
+            val right = concatenationExpr()
+    
+            expr = if(right is Expr.Invoke) {
+                Expr.Invoke(symbol.location, right.target, listOf(expr,  *right.arguments.toTypedArray()))
+            }
+            else {
+                Expr.Invoke(symbol.location, right, listOf(expr))
+            }
         }
         
         return expr
@@ -575,13 +596,13 @@ class Parser(private val lexer: Lexer) {
             val symbol = token
             
             expr = when {
-                skip(Token.Type.Symbol.DOT)         -> {
+                skip(Token.Type.Symbol.DOT)          -> {
                     val name = nameExpr()
                     
                     Expr.GetMember(symbol.location, expr, name)
                 }
                 
-                skip(Token.Type.Symbol.LEFT_SQUARE) -> {
+                skip(Token.Type.Symbol.LEFT_SQUARE)  -> {
                     val index = expr()
                     
                     mustSkip(Token.Type.Symbol.RIGHT_SQUARE)
@@ -589,7 +610,7 @@ class Parser(private val lexer: Lexer) {
                     Expr.GetIndex(symbol.location, expr, index)
                 }
                 
-                skip(Token.Type.Symbol.LEFT_PAREN)  -> {
+                skip(Token.Type.Symbol.LEFT_PAREN)   -> {
                     val arguments = mutableListOf<Expr>()
                     
                     if (!skip(Token.Type.Symbol.RIGHT_PAREN)) {
@@ -604,7 +625,7 @@ class Parser(private val lexer: Lexer) {
                     Expr.Invoke(symbol.location, expr, arguments)
                 }
                 
-                else                                -> error("/!\\ BROKEN POSTFIX OPERATOR /!\\")
+                else                                 -> error("/!\\ BROKEN POSTFIX OPERATOR /!\\")
             }
         }
         

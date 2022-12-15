@@ -62,6 +62,7 @@ data class Token(val location: Location, val type: Type) {
             DOUBLE_DASH("--"),
             DOT("."),
             COLON(":"),
+            DOUBLE_COLON("::"),
             ARROW("->"),
             AT("@"),
             LEFT_PAREN("("),

@@ -36,4 +36,6 @@ class VoltFunction private constructor(
         scope,
         link
     )
+    
+    override fun toString() = "function ${name.value}"
 }

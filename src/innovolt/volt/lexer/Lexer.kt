@@ -400,7 +400,10 @@ class Lexer(private val source: Source) : Iterator<Token> {
             
             skip(',') -> Token.Type.Symbol.COMMA
             
-            skip(':') -> Token.Type.Symbol.COLON
+            skip(':') -> when {
+                skip(':') -> Token.Type.Symbol.DOUBLE_COLON
+                else      -> Token.Type.Symbol.COLON
+            }
             
             skip(';') -> Token.Type.Symbol.SEMICOLON
             
