@@ -33,6 +33,8 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
     }
     
     fun stop() {
+        linker.wrapUp()
+
         memory.pop()
     }
     

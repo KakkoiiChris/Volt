@@ -5,6 +5,7 @@ import innovolt.volt.linker.Linker
 import innovolt.volt.runtime.Result
 import innovolt.volt.util.Source
 import innovolt.volt.util.VoltError
+import java.lang.Math
 import kotlin.math.*
 
 /**
@@ -152,7 +153,7 @@ object Math : Link {
             
             n as? Result.Number ?: VoltError.invalidLinkArgument("cbrt", "n", "Number")
             
-            Result.Number(cbrt(n.value))
+            Result.Number(Math.cbrt(n.value))
         }
         
         addFunction(".pow", 2) { _, data ->
@@ -416,7 +417,5 @@ object Math : Link {
     private fun comb(n: Double, k: Double) =
         fact(n) / (fact(n - k) * fact(k))
     
-    override fun finalize() {
-        TODO("Not yet implemented")
-    }
+    override fun wrapUp() = Unit
 }

@@ -55,7 +55,11 @@ class Linker {
     
     fun getClass(path: String) =
         classes[path]
-    
+
+    fun wrapUp() {
+        links.values.forEach(Link::wrapUp)
+    }
+
     class Function internal constructor(private val path: String, private val arity: Int, private val method: (Runtime, LinkData) -> Result<*>) {
         fun resolve(args: List<Result<*>>) =
             args.size == arity

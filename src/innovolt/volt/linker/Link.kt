@@ -20,5 +20,5 @@ interface Link {
     
     fun getLinks(linker: Linker)
     
-    fun finalize()
+    fun wrapUp()
 }
