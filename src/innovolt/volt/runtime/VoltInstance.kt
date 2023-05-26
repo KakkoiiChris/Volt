@@ -2,8 +2,6 @@ package innovolt.volt.runtime
 
 import innovolt.volt.lexer.Location
 import innovolt.volt.parser.Expr
-import innovolt.volt.util.toName
-import innovolt.volt.util.toValue
 
 /**
  * Volt
@@ -18,7 +16,13 @@ import innovolt.volt.util.toValue
  */
 class VoltInstance(val `class`: VoltClass, val runtime: Runtime) : Memory.Scope(`class`.scope) {
     override fun toString(): String {
-        val target = Expr.GetMember(Location.none, Result.Instance(this).toValue(), "toString".toName())
+        val function = this["toString"]
+        
+        if (function is Result.Null) {
+            return `class`.name.value
+        }
+        
+        val target = Expr.Value(Location.none, function)
         
         val invoke = Expr.Invoke(Location.none, target, emptyList())
         

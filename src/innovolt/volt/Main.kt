@@ -75,7 +75,6 @@ private fun file(path: String) {
 
 @OptIn(ExperimentalTime::class)
 private fun exec(runtime: Runtime, source: Source) {
-    
     val program = source.compile()
     
     val (result, time) = measureTimedValue {

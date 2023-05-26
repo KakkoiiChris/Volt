@@ -18,7 +18,7 @@ function addAt(list, index, element);
 
 function remove(list, element);
 
-function removeAt(list, index, elements);
+function removeAt(list, index);
 
 function forEach(list, action) {
     for (x : list) {
