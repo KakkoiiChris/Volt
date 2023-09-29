@@ -21,3 +21,6 @@ fun String.toName() =
 
 fun Result<*>.toValue() =
     Expr.Value(Location.none, this)
+
+fun Expr.Value.toInvoke(vararg args: Result<*>) =
+    Expr.Invoke(Location.none, this, args.map(Result<*>::toValue))

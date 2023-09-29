@@ -113,3 +113,5 @@ function perm(n, k);
 function sum(list);
 
 function prod(list);
+
+function random;

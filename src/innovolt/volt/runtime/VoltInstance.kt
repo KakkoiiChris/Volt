@@ -1,7 +1,7 @@
 package innovolt.volt.runtime
 
-import innovolt.volt.lexer.Location
-import innovolt.volt.parser.Expr
+import innovolt.volt.util.toInvoke
+import innovolt.volt.util.toValue
 
 /**
  * Volt
@@ -15,19 +15,23 @@ import innovolt.volt.parser.Expr
  * @author Christian Bryce Alexander
  */
 class VoltInstance(val `class`: VoltClass, val runtime: Runtime) : Memory.Scope(`class`.scope) {
+    val link get() = this["\$link"] as Result.ClassLink
+
     override fun toString(): String {
         val function = this["toString"]
-        
+
         if (function is Result.Null) {
             return `class`.name.value
         }
-        
-        val target = Expr.Value(Location.none, function)
-        
-        val invoke = Expr.Invoke(Location.none, target, emptyList())
-        
+
+        val target = function.toValue()
+
+        val invoke = target.toInvoke()
+
         val result = runtime.visit(invoke)
-        
-        return (result as? Result.String ?: TODO()).value
+
+        val string = result as? Result.String ?: TODO()
+
+        return string.value
     }
 }

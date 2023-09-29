@@ -1,3 +1,7 @@
-x = a -> a * 2;
+class Vector(x, y) {
+    function toString -> 5 < 2;
+}
 
-write(x(7));
+x = Vector(6, 9);
+
+write(x);

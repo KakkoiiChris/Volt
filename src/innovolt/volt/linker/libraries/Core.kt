@@ -7,6 +7,7 @@ import innovolt.volt.parser.Expr
 import innovolt.volt.runtime.Result
 import innovolt.volt.util.Source
 import innovolt.volt.util.VoltError
+import java.lang.Thread.sleep
 import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
@@ -86,7 +87,7 @@ object Core : Link {
             
             seconds as? Result.Number ?: VoltError.invalidLinkArgument("pause", "seconds", "Number")
             
-            Thread.sleep((seconds.value * 1000).toLong())
+            sleep((seconds.value * 1000).toLong())
             
             Result.Unit
         }

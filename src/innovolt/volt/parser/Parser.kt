@@ -336,8 +336,12 @@ class Parser(private val lexer: Lexer) {
             
             mustSkip(Token.Type.Symbol.RIGHT_PAREN)
         }
+
+        path.push(name.value)
         
         val init = if (skip(Token.Type.Symbol.SEMICOLON)) Stmt.Block(Location.none, emptyList()) else blockStmt()
+
+        path.pop()
         
         return Stmt.Class(location, name, params, init)
     }
