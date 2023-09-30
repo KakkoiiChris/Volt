@@ -13,7 +13,7 @@ import kotlin.math.floor
  *
  * @author Christian Bryce Alexander
  */
-interface Result<X> {
+abstract class Result<X>(val value: X) {
     companion object {
         fun of(x: Any) =
             when (x) {
@@ -43,13 +43,11 @@ interface Result<X> {
             }
     }
 
-    val value: X
+    override fun toString() = value.toString()
 
-    class Boolean(override val value: kotlin.Boolean) : Result<kotlin.Boolean> {
-        override fun toString() = value.toString()
-    }
+    class Boolean(value: kotlin.Boolean) : Result<kotlin.Boolean>(value)
 
-    class Number(override val value: Double) : Result<Double> {
+    class Number(value: Double) : Result<Double>(value) {
         override fun toString() =
             if (value == floor(value))
                 value.toInt().toString()
@@ -57,43 +55,21 @@ interface Result<X> {
                 value.toString()
     }
 
-    class String(override val value: kotlin.String) : Result<kotlin.String> {
-        override fun toString() = value
-    }
+    class String(value: kotlin.String) : Result<kotlin.String>(value)
 
-    class List(override val value: VoltList) : Result<VoltList> {
-        override fun toString() = value.joinToString(prefix = "[ ", separator = ", ", postfix = " ]")
-    }
+    class List(value: VoltList) : Result<VoltList>(value)
 
-    class Map(override val value: VoltMap) : Result<VoltMap> {
-        override fun toString() = value.entries.joinToString(prefix = "[ ", separator = ", ", postfix = " ]") { (k, v) -> "$k : $v" }
-    }
+    class Map(value: VoltMap) : Result<VoltMap>(value)
 
-    class Function(override val value: VoltFunction) : Result<VoltFunction> {
-        override fun toString() = value.toString()
-    }
+    class Function(value: VoltFunction) : Result<VoltFunction>(value)
 
-    class Class(override val value: VoltClass) : Result<VoltClass> {
-        override fun toString() = value.toString()
-    }
+    class Class(value: VoltClass) : Result<VoltClass>(value)
 
-    class Instance(override val value: VoltInstance) : Result<VoltInstance> {
-        override fun toString() = value.toString()
-    }
+    class Instance(value: VoltInstance) : Result<VoltInstance>(value)
 
-    class ClassLink(override val value: Any) : Result<Any> {
-        override fun toString() = value.toString()
-    }
+    class ClassLink(value: Any) : Result<Any>(value)
 
-    object Null : Result<innovolt.volt.runtime.Null> {
-        override val value = innovolt.volt.runtime.Null
+    object Null : Result<innovolt.volt.runtime.Null>(innovolt.volt.runtime.Null)
 
-        override fun toString() = value.toString()
-    }
-
-    object Unit : Result<kotlin.Unit> {
-        override val value = kotlin.Unit
-
-        override fun toString() = value.toString()
-    }
+    object Unit : Result<kotlin.Unit>(kotlin.Unit)
 }

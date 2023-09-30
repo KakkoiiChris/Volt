@@ -1,8 +1,6 @@
 package innovolt.volt.runtime
 
-import innovolt.volt.lexer.Location
 import innovolt.volt.linker.Linker
-import innovolt.volt.parser.Expr
 import innovolt.volt.parser.Stmt
 
 /**
@@ -16,26 +14,17 @@ import innovolt.volt.parser.Stmt
  *
  * @author Christian Bryce Alexander
  */
-class VoltFunction private constructor(
-    val location: Location,
-    val name: Expr.Name,
-    override val params: List<Expr.Name>,
-    val body: Stmt,
+class VoltFunction(
+    val function: Stmt.Function,
     val scope: Memory.Scope,
     val link: Linker.Function?,
 ) : Callable {
-    constructor(
-        function: Stmt.Function,
-        scope: Memory.Scope,
-        link: Linker.Function?,
-    ) : this(
-        function.location,
-        function.name,
-        function.params,
-        function.body,
-        scope,
-        link
-    )
-    
-    override fun toString() = "function ${name.value}"
+    val location get() = function.location
+    val path get() = function.path
+    val name get() = function.name
+    override val params get() = function.params
+    val body get() = function.body
+
+    override fun toString() =
+        "function ${function.path}(${params.joinToString(separator = ", ")})"
 }

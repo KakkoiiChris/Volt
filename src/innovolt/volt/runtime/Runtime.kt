@@ -83,6 +83,8 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
                     else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
                 }
 
+                is Result.List   -> Result.List(VoltList((left.value + visit(expr.right)).toMutableList()))
+
                 else             -> VoltError.invalidLeftOperand(left, expr.operator, expr.left.location)
             }
 
@@ -99,6 +101,18 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
             Expr.Binary.Operator.MULTIPLY      -> when (val left = visit(expr.left)) {
                 is Result.Number -> when (val right = visit(expr.right)) {
                     is Result.Number -> Result.Number(left.value * right.value)
+
+                    else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                }
+
+                is Result.String -> when (val right = visit(expr.right)) {
+                    is Result.Number -> Result.String(left.value.repeat(right.value.toInt()))
+
+                    else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                }
+
+                is Result.List   -> when (val right = visit(expr.right)) {
+                    is Result.Number -> Result.List(VoltList(MutableList(right.value.toInt()) { left.value.first() }))
 
                     else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
                 }
@@ -364,7 +378,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
 
         val callable = target.value as? Callable ?: VoltError.nonInvokedValue(target, expr.target.location)
 
-        if (callable.params.size != expr.arguments.size) VoltError.argumentResolution(callable, expr.target.location)
+        if (callable.params.size != expr.arguments.size) VoltError.unresolvedArguments(callable, expr.target.location)
 
         val variables = callable.params.zip(expr.arguments.map { visit(it) })
 
@@ -381,7 +395,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
         if (link != null) {
             val args = variables.map { it.second }
 
-            if (!function.link.resolve(args)) VoltError.argumentLinkResolution(function, function.location)
+            if (!function.link.resolve(args)) VoltError.unresolvedLink(function, function.location)
 
             val scope = function.scope
 
@@ -466,7 +480,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
         memory[expr.value]
 
     override fun visitValueExpr(expr: Expr.Value) =
-        Result.of(expr.value) ?: error("BROKEN VALUE '${expr.value}'")
+        Result.of(expr.value)!!
 
     override fun visitEmptyStmt(stmt: Stmt.Empty) =
         Unit

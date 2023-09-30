@@ -1,5 +1,6 @@
 package innovolt.volt.runtime
 
+import innovolt.volt.util.VoltError
 import innovolt.volt.util.toInvoke
 import innovolt.volt.util.toValue
 
@@ -15,22 +16,24 @@ import innovolt.volt.util.toValue
  * @author Christian Bryce Alexander
  */
 class VoltInstance(val `class`: VoltClass, val runtime: Runtime) : Memory.Scope(`class`.scope) {
-    val link get() = this["\$link"] as Result.ClassLink
+    val link get() = this["\$link"] as? Result.ClassLink
 
     override fun toString(): String {
-        val function = this["toString"]
+        var result = this["toString"]
 
-        if (function is Result.Null) {
-            return `class`.name.value
+        val function = when (result) {
+            is Result.Function -> result
+
+            else        -> return `class`.name.value
         }
 
         val target = function.toValue()
 
         val invoke = target.toInvoke()
 
-        val result = runtime.visit(invoke)
+        result = runtime.visit(invoke)
 
-        val string = result as? Result.String ?: TODO()
+        val string = result as? Result.String ?: VoltError.invalidReturnType(result, function.value)
 
         return string.value
     }

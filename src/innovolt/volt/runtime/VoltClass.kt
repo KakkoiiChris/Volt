@@ -1,7 +1,5 @@
 package innovolt.volt.runtime
 
-import innovolt.volt.lexer.Location
-import innovolt.volt.parser.Expr
 import innovolt.volt.parser.Stmt
 
 /**
@@ -16,11 +14,14 @@ import innovolt.volt.parser.Stmt
  * @author Christian Bryce Alexander
  */
 class VoltClass(
-    val location: Location,
-    val name: Expr.Name,
-    override val params: List<Expr.Name>,
-    val init: Stmt.Block,
+    val `class`: Stmt.Class,
     val scope: Memory.Scope,
 ) : Callable {
-    constructor(`class`: Stmt.Class, scope: Memory.Scope) : this(`class`.location, `class`.name, `class`.params, `class`.init, scope)
+    val location get() = `class`.location
+    val name get() = `class`.name
+    override val params get() = `class`.params
+    val init get() = `class`.init
+
+    override fun toString() =
+        "class ${`class`.name}(${params.joinToString(separator = ", ")})"
 }

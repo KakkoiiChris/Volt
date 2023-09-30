@@ -1,7 +1,6 @@
-class Vector(x, y) {
-    function toString -> 5 < 2;
-}
+import math;
 
-x = Vector(6, 9);
+x = [5] * 5;
 
 write(x);
+write(sum(x));

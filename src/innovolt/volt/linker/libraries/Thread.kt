@@ -5,6 +5,7 @@ import innovolt.volt.linker.Linker
 import innovolt.volt.parser.Expr
 import innovolt.volt.runtime.Result
 import innovolt.volt.util.Source
+import innovolt.volt.util.VoltError
 import java.lang.Thread
 import kotlin.concurrent.thread
 
@@ -26,9 +27,9 @@ object Thread : Link {
 
     override fun getLinks(linker: Linker) {
         linker.addClass("Thread") { runtime, instance ->
-            val name = instance["name"] as? Result.String ?: TODO()
+            val name = instance["name"] as? Result.String ?: VoltError.invalidLinkClassArgument("Thread", "name", "String")
 
-            val handler = instance["handler"] as? Result.Function ?: TODO()
+            val handler = instance["handler"] as? Result.Function ?: VoltError.invalidLinkClassArgument("Thread", "handler", "Function")
 
             val invoke = Expr.Invoke(handler.value.location, Expr.Value(handler.value.location, handler.value), emptyList())
 
@@ -39,16 +40,20 @@ object Thread : Link {
             Result.ClassLink(thread)
         }
 
-        linker.addFunction("Thread.start") { runtime, linkData ->
-            val link = (linkData.instance?.value?.link ?: TODO()).value as Thread
+        linker.addFunction("Thread.start") { _, linkData ->
+            val instance = linkData.instance!!.value
+
+            val link = instance.link!!.value as Thread
 
             link.start()
 
             Result.Unit
         }
 
-        linker.addFunction("Thread.join") { runtime, linkData ->
-            val link = (linkData.instance?.value?.link ?: TODO()).value as Thread
+        linker.addFunction("Thread.join") { _, linkData ->
+            val instance = linkData.instance!!.value
+
+            val link = instance.link!!.value as Thread
 
             link.join()
 

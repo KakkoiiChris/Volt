@@ -11,4 +11,12 @@ package innovolt.volt.runtime
  *
  * @author Christian Bryce Alexander
  */
-class VoltMap : MutableMap<String, Result<*>> by mutableMapOf()
+class VoltMap : MutableMap<String, Result<*>> by mutableMapOf() {
+    override fun toString() =
+        entries
+            .joinToString(
+                prefix = "[ ",
+                separator = ", ",
+                postfix = " ]"
+            ) { (k, v) -> "$k : $v" }
+}
