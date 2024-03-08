@@ -2,14 +2,13 @@ package innovolt.volt.util
 
 import innovolt.volt.lexer.Location
 import innovolt.volt.parser.Expr
-import innovolt.volt.runtime.Result
 
 /**
  * Volt
  *
  * Copyright (C) 2022, KakkoiiChris
  *
- * File:    Util.kt
+ * File:    Extensions.kt
  *
  * Created: Tuesday, November 22, 2022, 22:12:58
  *
@@ -18,9 +17,3 @@ import innovolt.volt.runtime.Result
 
 fun String.toName() =
     Expr.Name(Location.none, this)
-
-fun Result<*>.toValue() =
-    Expr.Value(Location.none, this)
-
-fun Expr.Value.toInvoke(vararg args: Result<*>) =
-    Expr.Invoke(Location.none, this, args.map(Result<*>::toValue))

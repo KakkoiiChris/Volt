@@ -4,7 +4,7 @@ import innovolt.volt.linker.libraries.Core
 import innovolt.volt.linker.libraries.Math
 import innovolt.volt.linker.libraries.Thread
 import innovolt.volt.parser.Expr
-import innovolt.volt.runtime.Result
+import innovolt.volt.runtime.VoltValue
 import innovolt.volt.runtime.Runtime
 import innovolt.volt.runtime.VoltInstance
 import innovolt.volt.util.Source
@@ -49,11 +49,11 @@ class Linker {
         return link.source
     }
 
-    fun addFunction(path: String, arity: Int = 0, method: (Runtime, LinkData) -> Result<*>) {
-        functions[path] = Function(path, arity, method)
+    fun addFunction(path: String, arity: Int = 0, method: (Runtime, LinkData) -> VoltValue<*>) {
+        functions[path] = Function(arity, method)
     }
 
-    fun addClass(path: String, method: (Runtime, VoltInstance) -> Result.ClassLink) {
+    fun addClass(path: String, method: (Runtime, VoltInstance) -> VoltValue.ClassLink) {
         classes[path] = Class(method)
     }
 
@@ -71,15 +71,15 @@ class Linker {
         val standardLibrary = listOf(Core, Math, Thread)
     }
 
-    class Function internal constructor(private val path: String, private val arity: Int, private val method: (Runtime, LinkData) -> Result<*>) {
-        fun resolve(args: List<Result<*>>) =
+    class Function internal constructor(private val arity: Int, private val method: (Runtime, LinkData) -> VoltValue<*>) {
+        fun resolve(args: List<VoltValue<*>>) =
             args.size == arity
 
-        operator fun invoke(runtime: Runtime, instance: Result.Instance?, args: List<Result<*>>) =
+        operator fun invoke(runtime: Runtime, instance: VoltValue.Instance?, args: List<VoltValue<*>>) =
             method(runtime, LinkData(instance, args))
     }
 
-    class Class internal constructor(private val method: (Runtime, VoltInstance) -> Result.ClassLink) {
+    class Class internal constructor(private val method: (Runtime, VoltInstance) -> VoltValue.ClassLink) {
         operator fun invoke(runtime: Runtime, instance: VoltInstance) {
             instance["\$link"] = method(runtime, instance)
         }

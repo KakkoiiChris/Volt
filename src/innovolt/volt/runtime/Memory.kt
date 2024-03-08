@@ -26,24 +26,24 @@ class Memory : Stack<Memory.Scope>() {
     operator fun get(key: String) =
         peek()[key]
     
-    operator fun set(key: String, value: Result<*>) {
+    operator fun set(key: String, value: VoltValue<*>) {
         peek()[key] = value
     }
     
     open class Scope(private val parent: Scope? = null) {
-        private val vars = mutableMapOf<String, Result<*>>()
+        private val vars = mutableMapOf<String, VoltValue<*>>()
         
-        operator fun get(key: String): Result<*> {
+        operator fun get(key: String): VoltValue<*> {
             var here: Scope? = this
             
             while (here != null && here.vars[key] == null) {
                 here = here.parent
             }
             
-            return here?.vars?.get(key) ?: Result.Null
+            return here?.vars?.get(key) ?: VoltValue.Null
         }
         
-        operator fun set(key: String, value: Result<*>) {
+        operator fun set(key: String, value: VoltValue<*>) {
             var here: Scope? = this
             
             while (here != null && here.vars[key] == null) {
@@ -52,7 +52,7 @@ class Memory : Stack<Memory.Scope>() {
             
             if (here == null) here = this
             
-            if (value === Result.Null) {
+            if (value === VoltValue.Null) {
                 here.vars.remove(key)
             }
     

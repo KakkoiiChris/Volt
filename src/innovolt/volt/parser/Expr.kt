@@ -2,6 +2,7 @@ package innovolt.volt.parser
 
 import innovolt.volt.lexer.Location
 import innovolt.volt.lexer.Token
+import innovolt.volt.runtime.VoltValue
 
 /**
  * Volt
@@ -161,16 +162,25 @@ sealed interface Expr {
         
         override fun <X> accept(visitor: Visitor<X>): X =
             visitor.visitNameExpr(this)
-        
+
+        override fun hashCode(): Int {
+            var result = location.hashCode()
+            result = 31 * result + value.hashCode()
+            return result
+        }
+
         override fun equals(other: Any?): Boolean {
             if (other !is Name) return false
-            
+
             return value == other.value
         }
     }
     
-    class Value(override val location: Location, val value: Any) : Expr {
+    class Value(override val location: Location, val value: VoltValue<*>) : Expr {
         override fun <X> accept(visitor: Visitor<X>): X =
             visitor.visitValueExpr(this)
+
+        fun toInvoke(vararg args: VoltValue<*>) =
+            Invoke(Location.none, this, args.map(VoltValue<*>::toValue))
     }
 }

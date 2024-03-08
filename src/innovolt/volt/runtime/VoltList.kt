@@ -11,7 +11,7 @@ package innovolt.volt.runtime
  *
  * @author Christian Bryce Alexander
  */
-class VoltList(list: MutableList<Result<*>> = mutableListOf()) : MutableList<Result<*>> by list {
+class VoltList(list: MutableList<VoltValue<*>> = mutableListOf()) : MutableList<VoltValue<*>> by list {
     override fun toString() =
         joinToString(
             prefix = "[ ",

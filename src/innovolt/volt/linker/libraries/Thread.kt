@@ -3,7 +3,7 @@ package innovolt.volt.linker.libraries
 import innovolt.volt.linker.Link
 import innovolt.volt.linker.Linker
 import innovolt.volt.parser.Expr
-import innovolt.volt.runtime.Result
+import innovolt.volt.runtime.VoltValue
 import innovolt.volt.util.Source
 import innovolt.volt.util.VoltError
 import java.lang.Thread
@@ -27,17 +27,17 @@ object Thread : Link {
 
     override fun getLinks(linker: Linker) {
         linker.addClass("Thread") { runtime, instance ->
-            val name = instance["name"] as? Result.String ?: VoltError.invalidLinkClassArgument("Thread", "name", "String")
+            val name = instance["name"] as? VoltValue.String ?: VoltError.invalidLinkClassArgument("Thread", "name", "String")
 
-            val handler = instance["handler"] as? Result.Function ?: VoltError.invalidLinkClassArgument("Thread", "handler", "Function")
+            val handler = instance["handler"] as? VoltValue.Function ?: VoltError.invalidLinkClassArgument("Thread", "handler", "Function")
 
-            val invoke = Expr.Invoke(handler.value.location, Expr.Value(handler.value.location, handler.value), emptyList())
+            val invoke = Expr.Invoke(handler.value.location, Expr.Value(handler.value.location, handler), emptyList())
 
             val thread = thread(start = false, name = name.value) {
                 runtime.visit(invoke)
             }
 
-            Result.ClassLink(thread)
+            VoltValue.ClassLink(thread)
         }
 
         linker.addFunction("Thread.start") { _, linkData ->
@@ -47,7 +47,7 @@ object Thread : Link {
 
             link.start()
 
-            Result.Unit
+            VoltValue.Unit
         }
 
         linker.addFunction("Thread.join") { _, linkData ->
@@ -57,7 +57,7 @@ object Thread : Link {
 
             link.join()
 
-            Result.Unit
+            VoltValue.Unit
         }
     }
 

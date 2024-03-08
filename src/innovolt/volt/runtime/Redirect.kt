@@ -19,7 +19,7 @@ sealed class Redirect(val origin: Location) : Throwable() {
     
     class Continue(origin: Location, val label:Expr.Name) : Redirect(origin)
     
-    class Throw(origin: Location, val value: Result<*>) : Redirect(origin)
+    class Throw(origin: Location, val value: VoltValue<*>) : Redirect(origin)
     
-    class Return(origin: Location, val value: Result<*>) : Redirect(origin)
+    class Return(origin: Location, val value: VoltValue<*>) : Redirect(origin)
 }

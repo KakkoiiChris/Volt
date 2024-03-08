@@ -11,7 +11,7 @@ package innovolt.volt.runtime
  *
  * @author Christian Bryce Alexander
  */
-class VoltMap : MutableMap<String, Result<*>> by mutableMapOf() {
+class VoltMap : MutableMap<String, VoltValue<*>> by mutableMapOf() {
     override fun toString() =
         entries
             .joinToString(

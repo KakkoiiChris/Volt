@@ -1,6 +1,6 @@
 package innovolt.volt.linker
 
-import innovolt.volt.runtime.Result
+import innovolt.volt.runtime.VoltValue
 
 /**
  * Volt
@@ -13,4 +13,4 @@ import innovolt.volt.runtime.Result
  *
  * @author Christian Bryce Alexander
  */
-data class LinkData(val instance: Result.Instance?, val args: List<Result<*>>)
+data class LinkData(val instance: VoltValue.Instance?, val args: List<VoltValue<*>>)

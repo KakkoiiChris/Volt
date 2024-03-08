@@ -1,6 +1,6 @@
 package innovolt.volt.lexer
 
-import innovolt.volt.runtime.Null
+import innovolt.volt.runtime.VoltValue
 import innovolt.volt.util.Source
 import innovolt.volt.util.VoltError
 
@@ -20,9 +20,11 @@ class Lexer(private val source: Source) : Iterator<Token> {
         private const val NUL = '\u0000'
     }
     
-    private val keywords = Token.Type.Keyword.values().associateBy { it.name.lowercase() }
+    private val keywords = Token.Type.Keyword.values()
+        .associateBy { it.name.lowercase() }
     
-    private val literals = listOf(true, false, Null, Unit).associateBy { it.toString() }
+    private val literals = listOf(VoltValue.Boolean.`true`, VoltValue.Boolean.`false`, VoltValue.Null, VoltValue.Unit)
+        .associateBy { it.toString() }
     
     private var position = 0
     private var row = 1
@@ -199,7 +201,7 @@ class Lexer(private val source: Source) : Iterator<Token> {
             }
         }
         
-        val type = Token.Type.Value(result.toDouble())
+        val type = Token.Type.Value(VoltValue.Number(result.toDouble()))
         
         return Token(location, type)
     }
@@ -303,7 +305,7 @@ class Lexer(private val source: Source) : Iterator<Token> {
         
         mustSkip(delimiter)
         
-        val type = Token.Type.Value(result)
+        val type = Token.Type.Value(VoltValue.String(result))
         
         return Token(location, type)
     }

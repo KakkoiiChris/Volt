@@ -13,7 +13,7 @@
 // Constants
  
 MIN_NUMBER        = 4.9e-324;
-MAX_VALUE         = 1.7976931348623157e308;
+MAX_NUMBER        = 1.7976931348623157e308;
 POSITIVE_INFINITY = 1.0 / 0.0;
 NEGATIVE_INFINITY = -1.0 / 0.0;
 NaN               = -(0.0 / 0.0);

@@ -4,7 +4,7 @@ import innovolt.volt.lexer.Location
 import innovolt.volt.linker.Link
 import innovolt.volt.linker.Linker
 import innovolt.volt.parser.Expr
-import innovolt.volt.runtime.Result
+import innovolt.volt.runtime.VoltValue
 import innovolt.volt.util.Source
 import innovolt.volt.util.VoltError
 import java.lang.Thread.sleep
@@ -31,71 +31,71 @@ object Core : Link {
         addFunction(".add", 2) { _, data ->
             val (list, element) = data.args
             
-            list as? Result.List ?: VoltError.invalidLinkFunctionArgument("add", "list", "List")
+            list as? VoltValue.List ?: VoltError.invalidLinkFunctionArgument("add", "list", "List")
             
             list.value.add(element)
             
-            Result.Unit
+            VoltValue.Unit
         }
         
         addFunction(".addAt", 3) { _, data ->
             val (list, index, element) = data.args
             
-            list as? Result.List ?: VoltError.invalidLinkFunctionArgument("addAt", "list", "List")
-            index as? Result.Number ?: VoltError.invalidLinkFunctionArgument("addAt", "index", "Number")
+            list as? VoltValue.List ?: VoltError.invalidLinkFunctionArgument("addAt", "list", "List")
+            index as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("addAt", "index", "Number")
             
             list.value.add(index.value.toInt(), element)
             
-            Result.Unit
+            VoltValue.Unit
         }
         
         addFunction(".remove", 2) { _, data ->
             val (list, element) = data.args
             
-            list as? Result.List ?: VoltError.invalidLinkFunctionArgument("removeAt", "list", "List")
+            list as? VoltValue.List ?: VoltError.invalidLinkFunctionArgument("removeAt", "list", "List")
             
             list.value.remove(element)
             
-            Result.Unit
+            VoltValue.Unit
         }
         
         addFunction(".removeAt", 2) { _, data ->
             val (list, index) = data.args
             
-            list as? Result.List ?: VoltError.invalidLinkFunctionArgument("removeAt", "list", "List")
-            index as? Result.Number ?: VoltError.invalidLinkFunctionArgument("removeAt", "index", "Number")
+            list as? VoltValue.List ?: VoltError.invalidLinkFunctionArgument("removeAt", "list", "List")
+            index as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("removeAt", "index", "Number")
             
             list.value.removeAt(index.value.toInt())
         }
         
         addFunction(".read") { _, _ ->
-            Result.String(readln())
+            VoltValue.String(readln())
         }
         
         addFunction(".write", 1) { _, data ->
             println(data.args[0])
             
-            Result.Unit
+            VoltValue.Unit
         }
         
         addFunction(".time") { _, _ ->
-            Result.Number(System.nanoTime() / 1E9)
+            VoltValue.Number(System.nanoTime() / 1E9)
         }
         
         addFunction(".pause", 1) { _, data ->
             val (seconds) = data.args
             
-            seconds as? Result.Number ?: VoltError.invalidLinkFunctionArgument("pause", "seconds", "Number")
+            seconds as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("pause", "seconds", "Number")
             
             sleep((seconds.value * 1000).toLong())
             
-            Result.Unit
+            VoltValue.Unit
         }
         
         addFunction(".run", 1) { runtime, data ->
             val (handler) = data.args
             
-            handler as? Result.Function ?: VoltError.invalidLinkFunctionArgument("run", "handler", "Function")
+            handler as? VoltValue.Function ?: VoltError.invalidLinkFunctionArgument("run", "handler", "Function")
             
             val invoke = Expr.Invoke(Location.none, Expr.Value(Location.none, handler), emptyList())
             
@@ -103,13 +103,13 @@ object Core : Link {
                 runtime.visit(invoke)
             }
             
-            Result.Unit
+            VoltValue.Unit
         }
         
         addFunction(".exit", 1) { _, data ->
             val (code) = data.args
             
-            code as? Result.Number ?: VoltError.invalidLinkFunctionArgument("exit", "code", "Number")
+            code as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("exit", "code", "Number")
             
             exitProcess(code.value.toInt())
         }

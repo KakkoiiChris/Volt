@@ -1,6 +1,2 @@
-import math;
-
-x = [5] * 5;
-
-write(x);
-write(sum(x));
+write(null and 15);
+write(null or 15);

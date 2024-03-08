@@ -1,5 +1,7 @@
 package innovolt.volt.lexer
 
+import innovolt.volt.runtime.VoltValue
+
 /**
  * Volt
  *
@@ -76,7 +78,7 @@ data class Token(val location: Location, val type: Type) {
             END_OF_FILE("0");
         }
         
-        data class Value(val value: Any) : Type
+        data class Value(val value: VoltValue<*>) : Type
         
         data class Identifier(val value: String) : Type
     }

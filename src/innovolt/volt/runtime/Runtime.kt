@@ -19,7 +19,7 @@ import kotlin.math.pow
  *
  * @author Christian Bryce Alexander
  */
-class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, Stmt.Visitor<Unit> {
+class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<VoltValue<*>>, Stmt.Visitor<Unit> {
     private val memory = Memory()
 
     fun start() {
@@ -38,7 +38,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
         memory.pop()
     }
 
-    fun run(program: Program): Result<*> {
+    fun run(program: Program): VoltValue<*> {
         try {
             for (stmt in program) {
                 visit(stmt)
@@ -54,13 +54,13 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
             VoltError.unhandledContinue(`continue`.origin)
         }
 
-        return Result.Unit
+        return VoltValue.Unit
     }
 
     override fun visitEmptyExpr(expr: Expr.Empty) =
-        Result.Unit
+        VoltValue.Unit
 
-    override fun visitAssignExpr(expr: Expr.Assign): Result<*> {
+    override fun visitAssignExpr(expr: Expr.Assign): VoltValue<*> {
         val value = visit(expr.value)
 
         memory[expr.name.value] = value
@@ -68,8 +68,8 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
         return value
     }
 
-    override fun visitTernaryExpr(expr: Expr.Ternary): Result<*> {
-        val condition = visit(expr.condition) as? Result.Boolean ?: VoltError.invalidCondition(expr.condition.location)
+    override fun visitTernaryExpr(expr: Expr.Ternary): VoltValue<*> {
+        val condition = visit(expr.condition).toBoolean()
 
         return visit(if (condition.value) expr.yes else expr.no)
     }
@@ -77,74 +77,74 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
     override fun visitBinaryExpr(expr: Expr.Binary) =
         when (expr.operator) {
             Expr.Binary.Operator.ADD           -> when (val left = visit(expr.left)) {
-                is Result.Number -> when (val right = visit(expr.right)) {
-                    is Result.Number -> Result.Number(left.value + right.value)
+                is VoltValue.Number -> when (val right = visit(expr.right)) {
+                    is VoltValue.Number -> VoltValue.Number(left.value + right.value)
 
-                    else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                    else                -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
                 }
 
-                is Result.List   -> Result.List(VoltList((left.value + visit(expr.right)).toMutableList()))
+                is VoltValue.List   -> VoltValue.List(VoltList((left.value + visit(expr.right)).toMutableList()))
 
                 else             -> VoltError.invalidLeftOperand(left, expr.operator, expr.left.location)
             }
 
             Expr.Binary.Operator.SUBTRACT      -> when (val left = visit(expr.left)) {
-                is Result.Number -> when (val right = visit(expr.right)) {
-                    is Result.Number -> Result.Number(left.value - right.value)
+                is VoltValue.Number -> when (val right = visit(expr.right)) {
+                    is VoltValue.Number -> VoltValue.Number(left.value - right.value)
 
-                    else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                    else                -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
                 }
 
                 else             -> VoltError.invalidLeftOperand(left, expr.operator, expr.left.location)
             }
 
             Expr.Binary.Operator.MULTIPLY      -> when (val left = visit(expr.left)) {
-                is Result.Number -> when (val right = visit(expr.right)) {
-                    is Result.Number -> Result.Number(left.value * right.value)
+                is VoltValue.Number -> when (val right = visit(expr.right)) {
+                    is VoltValue.Number -> VoltValue.Number(left.value * right.value)
 
-                    else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                    else                -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
                 }
 
-                is Result.String -> when (val right = visit(expr.right)) {
-                    is Result.Number -> Result.String(left.value.repeat(right.value.toInt()))
+                is VoltValue.String -> when (val right = visit(expr.right)) {
+                    is VoltValue.Number -> VoltValue.String(left.value.repeat(right.value.toInt()))
 
-                    else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                    else                -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
                 }
 
-                is Result.List   -> when (val right = visit(expr.right)) {
-                    is Result.Number -> Result.List(VoltList(MutableList(right.value.toInt()) { left.value.first() }))
+                is VoltValue.List   -> when (val right = visit(expr.right)) {
+                    is VoltValue.Number -> VoltValue.List(VoltList(MutableList(right.value.toInt()) { left.value.first() }))
 
-                    else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                    else                -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
                 }
 
                 else             -> VoltError.invalidLeftOperand(left, expr.operator, expr.left.location)
             }
 
             Expr.Binary.Operator.DIVIDE        -> when (val left = visit(expr.left)) {
-                is Result.Number -> when (val right = visit(expr.right)) {
-                    is Result.Number -> Result.Number(left.value / right.value)
+                is VoltValue.Number -> when (val right = visit(expr.right)) {
+                    is VoltValue.Number -> VoltValue.Number(left.value / right.value)
 
-                    else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                    else                -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
                 }
 
                 else             -> VoltError.invalidLeftOperand(left, expr.operator, expr.left.location)
             }
 
             Expr.Binary.Operator.MODULUS       -> when (val left = visit(expr.left)) {
-                is Result.Number -> when (val right = visit(expr.right)) {
-                    is Result.Number -> Result.Number(left.value % right.value)
+                is VoltValue.Number -> when (val right = visit(expr.right)) {
+                    is VoltValue.Number -> VoltValue.Number(left.value % right.value)
 
-                    else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                    else                -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
                 }
 
                 else             -> VoltError.invalidLeftOperand(left, expr.operator, expr.left.location)
             }
 
             Expr.Binary.Operator.EXPONENTIATE  -> when (val left = visit(expr.left)) {
-                is Result.Number -> when (val right = visit(expr.right)) {
-                    is Result.Number -> Result.Number(left.value.pow(right.value))
+                is VoltValue.Number -> when (val right = visit(expr.right)) {
+                    is VoltValue.Number -> VoltValue.Number(left.value.pow(right.value))
 
-                    else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                    else                -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
                 }
 
                 else             -> VoltError.invalidLeftOperand(left, expr.operator, expr.left.location)
@@ -154,165 +154,149 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
                 val left = visit(expr.left)
                 val right = visit(expr.right)
 
-                Result.String("$left$right")
+                VoltValue.String("$left$right")
             }
 
             Expr.Binary.Operator.AND           -> {
                 val left = visit(expr.left)
 
-                left as? Result.Boolean ?: VoltError.invalidLeftOperand(left, expr.operator, expr.left.location)
-
-                if (!left.value) {
-                    Result.Boolean(false)
+                if (left.toBoolean().value) {
+                    visit(expr.right)
                 }
                 else {
-                    val right = visit(expr.right)
-
-                    right as? Result.Boolean ?: VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                    left
                 }
             }
 
             Expr.Binary.Operator.OR            -> {
                 val left = visit(expr.left)
 
-                left as? Result.Boolean ?: VoltError.invalidLeftOperand(left, expr.operator, expr.left.location)
-
-                if (left.value) {
-                    Result.Boolean(true)
+                if (left.toBoolean().value) {
+                    left
                 }
                 else {
-                    val right = visit(expr.right)
-
-                    right as? Result.Boolean ?: VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                    visit(expr.right)
                 }
             }
 
             Expr.Binary.Operator.LESS          -> when (val left = visit(expr.left)) {
-                is Result.Number -> when (val right = visit(expr.right)) {
-                    is Result.Number -> Result.Boolean(left.value < right.value)
+                is VoltValue.Number -> when (val right = visit(expr.right)) {
+                    is VoltValue.Number -> VoltValue.Boolean(left.value < right.value)
 
-                    else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                    else                -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
                 }
 
                 else             -> VoltError.invalidLeftOperand(left, expr.operator, expr.left.location)
             }
 
             Expr.Binary.Operator.LESS_EQUAL    -> when (val left = visit(expr.left)) {
-                is Result.Number -> when (val right = visit(expr.right)) {
-                    is Result.Number -> Result.Boolean(left.value <= right.value)
+                is VoltValue.Number -> when (val right = visit(expr.right)) {
+                    is VoltValue.Number -> VoltValue.Boolean(left.value <= right.value)
 
-                    else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                    else                -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
                 }
 
                 else             -> VoltError.invalidLeftOperand(left, expr.operator, expr.left.location)
             }
 
             Expr.Binary.Operator.GREATER       -> when (val left = visit(expr.left)) {
-                is Result.Number -> when (val right = visit(expr.right)) {
-                    is Result.Number -> Result.Boolean(left.value > right.value)
+                is VoltValue.Number -> when (val right = visit(expr.right)) {
+                    is VoltValue.Number -> VoltValue.Boolean(left.value > right.value)
 
-                    else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                    else                -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
                 }
 
                 else             -> VoltError.invalidLeftOperand(left, expr.operator, expr.left.location)
             }
 
             Expr.Binary.Operator.GREATER_EQUAL -> when (val left = visit(expr.left)) {
-                is Result.Number -> when (val right = visit(expr.right)) {
-                    is Result.Number -> Result.Boolean(left.value >= right.value)
+                is VoltValue.Number -> when (val right = visit(expr.right)) {
+                    is VoltValue.Number -> VoltValue.Boolean(left.value >= right.value)
 
-                    else             -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
+                    else                -> VoltError.invalidRightOperand(right, expr.operator, expr.right.location)
                 }
 
                 else             -> VoltError.invalidLeftOperand(left, expr.operator, expr.left.location)
             }
 
             Expr.Binary.Operator.EQUAL         -> when (val left = visit(expr.left)) {
-                is Result.Boolean -> when (val right = visit(expr.right)) {
-                    is Result.Boolean -> Result.Boolean(left.value == right.value)
+                is VoltValue.Boolean -> when (val right = visit(expr.right)) {
+                    is VoltValue.Boolean -> VoltValue.Boolean(left.value == right.value)
 
-                    else              -> Result.Boolean(false)
+                    else                 -> VoltValue.Boolean(false)
                 }
 
-                is Result.Number  -> when (val right = visit(expr.right)) {
-                    is Result.Number -> Result.Boolean(left.value == right.value)
+                is VoltValue.Number  -> when (val right = visit(expr.right)) {
+                    is VoltValue.Number -> VoltValue.Boolean(left.value == right.value)
 
-                    else             -> Result.Boolean(false)
+                    else                -> VoltValue.Boolean(false)
                 }
 
-                is Result.String  -> when (val right = visit(expr.right)) {
-                    is Result.String -> Result.Boolean(left.value == right.value)
+                is VoltValue.String  -> when (val right = visit(expr.right)) {
+                    is VoltValue.String -> VoltValue.Boolean(left.value == right.value)
 
-                    else             -> Result.Boolean(false)
+                    else                -> VoltValue.Boolean(false)
                 }
 
-                else              -> Result.Boolean(false)
+                else                 -> VoltValue.Boolean(false)
             }
 
             Expr.Binary.Operator.NOT_EQUAL     -> when (val left = visit(expr.left)) {
-                is Result.Boolean -> when (val right = visit(expr.right)) {
-                    is Result.Boolean -> Result.Boolean(left.value != right.value)
+                is VoltValue.Boolean -> when (val right = visit(expr.right)) {
+                    is VoltValue.Boolean -> VoltValue.Boolean(left.value != right.value)
 
-                    else              -> Result.Boolean(true)
+                    else                 -> VoltValue.Boolean(true)
                 }
 
-                is Result.Number  -> when (val right = visit(expr.right)) {
-                    is Result.Number -> Result.Boolean(left.value != right.value)
+                is VoltValue.Number  -> when (val right = visit(expr.right)) {
+                    is VoltValue.Number -> VoltValue.Boolean(left.value != right.value)
 
-                    else             -> Result.Boolean(true)
+                    else                -> VoltValue.Boolean(true)
                 }
 
-                is Result.String  -> when (val right = visit(expr.right)) {
-                    is Result.String -> Result.Boolean(left.value != right.value)
+                is VoltValue.String  -> when (val right = visit(expr.right)) {
+                    is VoltValue.String -> VoltValue.Boolean(left.value != right.value)
 
-                    else             -> Result.Boolean(true)
+                    else                -> VoltValue.Boolean(true)
                 }
 
-                else              -> Result.Boolean(true)
+                else                 -> VoltValue.Boolean(true)
             }
         }
 
     override fun visitPrefixExpr(expr: Expr.Prefix) =
         when (expr.operator) {
             Expr.Prefix.Operator.NEGATE -> when (val right = visit(expr.right)) {
-                is Result.Number -> Result.Number(-right.value)
+                is VoltValue.Number -> VoltValue.Number(-right.value)
 
-                is Result.String -> Result.String(right.value.reversed())
+                is VoltValue.String -> VoltValue.String(right.value.reversed())
 
                 else             -> VoltError.invalidOperand(right, expr.operator, expr.right.location)
             }
 
             Expr.Prefix.Operator.NOT    -> when (val right = visit(expr.right)) {
-                is Result.Boolean -> Result.Boolean(!right.value)
+                is VoltValue.Boolean -> VoltValue.Boolean(!right.value)
 
                 else              -> VoltError.invalidOperand(right, expr.operator, expr.right.location)
             }
 
-            Expr.Prefix.Operator.SIZE   -> when (val right = visit(expr.right)) {
-                is Result.String -> Result.Number(right.value.length.toDouble())
+            Expr.Prefix.Operator.SIZE   -> visit(expr.right).size
 
-                is Result.List   -> Result.Number(right.value.size.toDouble())
-
-                is Result.Map    -> Result.Number(right.value.size.toDouble())
-
-                else             -> Result.Number(1.0)
-            }
-
-            Expr.Prefix.Operator.STRING -> Result.String(visit(expr.right).toString())
+            Expr.Prefix.Operator.STRING -> VoltValue.String(visit(expr.right).toString())
         }
 
-    override fun visitGetMemberExpr(expr: Expr.GetMember): Result<*> {
+    override fun visitGetMemberExpr(expr: Expr.GetMember): VoltValue<*> {
         val target = visit(expr.target)
 
-        target as? Result.Instance ?: VoltError.nonAccessedValue(target, expr.target.location)
+        target as? VoltValue.Instance ?: VoltError.nonAccessedValue(target, expr.target.location)
 
         return target.value[expr.member.value]
     }
 
-    override fun visitSetMemberExpr(expr: Expr.SetMember): Result<*> {
+    override fun visitSetMemberExpr(expr: Expr.SetMember): VoltValue<*> {
         val target = visit(expr.target)
 
-        target as? Result.Instance ?: VoltError.nonAccessedValue(target, expr.target.location)
+        target as? VoltValue.Instance ?: VoltError.nonAccessedValue(target, expr.target.location)
 
         val value = visit(expr.value)
 
@@ -323,22 +307,22 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
 
     override fun visitGetIndexExpr(expr: Expr.GetIndex) =
         when (val target = visit(expr.target)) {
-            is Result.String -> when (val index = visit(expr.index)) {
-                is Result.Number -> Result.String(target.value[index.value.toInt()].toString())
+            is VoltValue.String -> when (val index = visit(expr.index)) {
+                is VoltValue.Number -> VoltValue.String(target.value[index.value.toInt()].toString())
 
-                else             -> VoltError.invalidIndex(target, index, expr.index.location)
+                else                -> VoltError.invalidIndex(target, index, expr.index.location)
             }
 
-            is Result.List   -> when (val index = visit(expr.index)) {
-                is Result.Number -> target.value[index.value.toInt()]
+            is VoltValue.List   -> when (val index = visit(expr.index)) {
+                is VoltValue.Number -> target.value[index.value.toInt()]
 
-                else             -> VoltError.invalidIndex(target, index, expr.index.location)
+                else                -> VoltError.invalidIndex(target, index, expr.index.location)
             }
 
-            is Result.Map    -> when (val index = visit(expr.index)) {
-                is Result.String -> target.value[index.value] ?: Result.Null
+            is VoltValue.Map    -> when (val index = visit(expr.index)) {
+                is VoltValue.String -> target.value[index.value] ?: VoltValue.Null
 
-                else             -> VoltError.invalidIndex(target, index, expr.index.location)
+                else                -> VoltError.invalidIndex(target, index, expr.index.location)
             }
 
             else             -> VoltError.nonIndexedValue(target, expr.target.location)
@@ -346,8 +330,8 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
 
     override fun visitSetIndexExpr(expr: Expr.SetIndex) =
         when (val target = visit(expr.target)) {
-            is Result.List -> when (val index = visit(expr.index)) {
-                is Result.Number -> {
+            is VoltValue.List -> when (val index = visit(expr.index)) {
+                is VoltValue.Number -> {
                     val value = visit(expr.value)
 
                     target.value[index.value.toInt()] = value
@@ -355,11 +339,11 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
                     value
                 }
 
-                else             -> VoltError.invalidIndex(target, index, expr.index.location)
+                else                -> VoltError.invalidIndex(target, index, expr.index.location)
             }
 
-            is Result.Map  -> when (val index = visit(expr.index)) {
-                is Result.String -> {
+            is VoltValue.Map  -> when (val index = visit(expr.index)) {
+                is VoltValue.String -> {
                     val value = visit(expr.value)
 
                     target.value[index.value] = value
@@ -367,13 +351,13 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
                     value
                 }
 
-                else             -> VoltError.invalidIndex(target, index, expr.index.location)
+                else                -> VoltError.invalidIndex(target, index, expr.index.location)
             }
 
             else           -> VoltError.nonIndexedValue(target, expr.target.location)
         }
 
-    override fun visitInvokeExpr(expr: Expr.Invoke): Result<*> {
+    override fun visitInvokeExpr(expr: Expr.Invoke): VoltValue<*> {
         val target = visit(expr.target)
 
         val callable = target.value as? Callable ?: VoltError.nonInvokedValue(target, expr.target.location)
@@ -389,7 +373,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
         }
     }
 
-    private fun invokeFunction(function: VoltFunction, variables: List<Pair<Expr.Name, Result<*>>>): Result<*> {
+    private fun invokeFunction(function: VoltFunction, variables: List<Pair<Expr.Name, VoltValue<*>>>): VoltValue<*> {
         val link = function.link
 
         if (link != null) {
@@ -400,7 +384,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
             val scope = function.scope
 
             val instance = if (scope is VoltInstance)
-                Result.Instance(scope)
+                VoltValue.Instance(scope)
             else
                 null
 
@@ -423,10 +407,10 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
             memory.pop()
         }
 
-        return Result.Unit
+        return VoltValue.Unit
     }
 
-    private fun invokeClass(`class`: VoltClass, variables: List<Pair<Expr.Name, Result<*>>>): Result.Instance {
+    private fun invokeClass(`class`: VoltClass, variables: List<Pair<Expr.Name, VoltValue<*>>>): VoltValue.Instance {
         val instance = VoltInstance(`class`, this)
 
         try {
@@ -450,37 +434,37 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
             link(this, instance)
         }
 
-        return Result.Instance(instance)
+        return VoltValue.Instance(instance)
     }
 
-    override fun visitListLiteralExpr(expr: Expr.ListLiteral): Result<*> {
+    override fun visitListLiteralExpr(expr: Expr.ListLiteral): VoltValue<*> {
         val list = VoltList()
 
         for (element in expr.elements) {
             list += visit(element)
         }
 
-        return Result.List(list)
+        return VoltValue.List(list)
     }
 
-    override fun visitMapLiteralExpr(expr: Expr.MapLiteral): Result<*> {
+    override fun visitMapLiteralExpr(expr: Expr.MapLiteral): VoltValue<*> {
         val map = VoltMap()
 
         for ((key, value) in expr.pairs) {
             map[key.value] = visit(value)
         }
 
-        return Result.Map(map)
+        return VoltValue.Map(map)
     }
 
     override fun visitLambdaExpr(expr: Expr.Lambda) =
-        Result.Function(VoltFunction(expr.function, memory.peek(), null))
+        VoltValue.Function(VoltFunction(expr.function, memory.peek(), null))
 
     override fun visitNameExpr(expr: Expr.Name) =
         memory[expr.value]
 
     override fun visitValueExpr(expr: Expr.Value) =
-        Result.of(expr.value)!!
+        VoltValue.of(expr.value)!!
 
     override fun visitEmptyStmt(stmt: Stmt.Empty) =
         Unit
@@ -499,7 +483,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
     }
 
     override fun visitIfStmt(stmt: Stmt.If) {
-        val condition = visit(stmt.condition) as? Result.Boolean ?: VoltError.invalidCondition(stmt.condition.location)
+        val condition = visit(stmt.condition).toBoolean()
 
         if (condition.value) {
             visit(stmt.body)
@@ -511,8 +495,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
 
     override fun visitWhileStmt(stmt: Stmt.While) {
         while (true) {
-            val condition = visit(stmt.condition) as? Result.Boolean
-                            ?: VoltError.invalidCondition(stmt.condition.location)
+            val condition = visit(stmt.condition).toBoolean()
 
             if (!condition.value) break
 
@@ -556,8 +539,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
                 continue
             }
 
-            val condition = visit(stmt.condition) as? Result.Boolean
-                            ?: VoltError.invalidCondition(stmt.condition.location)
+            val condition = visit(stmt.condition).toBoolean()
 
             if (!condition.value) break
         }
@@ -566,7 +548,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
     override fun visitForStmt(stmt: Stmt.For) {
         val iterable = visit(stmt.iterable)
 
-        val list = iterable.iterable() ?: VoltError.nonIterableValue(iterable, stmt.iterable.location)
+        val list = iterable.iterable()
 
         try {
             memory.push()
@@ -598,15 +580,15 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
         }
     }
 
-    private fun Result<*>.iterable() =
+    private fun VoltValue<*>.iterable() =
         when (this) {
-            is Result.String -> value.toCharArray().map { Result.String(it.toString()) }
+            is VoltValue.String -> value.toCharArray().map { VoltValue.String(it.toString()) }
 
-            is Result.List   -> value
+            is VoltValue.List   -> value
 
-            is Result.Map    -> value.values.toList()
+            is VoltValue.Map    -> value.values.toList()
 
-            else             -> null
+            else                -> listOf(this)
         }
 
     override fun visitTryStmt(stmt: Stmt.Try) {
@@ -657,11 +639,11 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<Result<*>>, 
             link = linker.getFunction(stmt.path) ?: VoltError.noLink(stmt, stmt.location)
         }
 
-        memory[stmt.name.value] = Result.Function(VoltFunction(stmt, memory.peek(), link))
+        memory[stmt.name.value] = VoltValue.Function(VoltFunction(stmt, memory.peek(), link))
     }
 
     override fun visitClassStmt(stmt: Stmt.Class) {
-        memory[stmt.name.value] = Result.Class(VoltClass(stmt, memory.peek()))
+        memory[stmt.name.value] = VoltValue.Class(VoltClass(stmt, memory.peek()))
     }
 
     override fun visitImportStmt(stmt: Stmt.Import) {

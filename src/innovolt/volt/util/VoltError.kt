@@ -5,7 +5,7 @@ import innovolt.volt.lexer.Token
 import innovolt.volt.parser.Expr
 import innovolt.volt.parser.Stmt
 import innovolt.volt.runtime.Callable
-import innovolt.volt.runtime.Result
+import innovolt.volt.runtime.VoltValue
 import innovolt.volt.runtime.VoltFunction
 import kotlin.reflect.KClass
 
@@ -70,28 +70,25 @@ class VoltError(stage: String, msg: String, loc: Location) : RuntimeException("V
         fun unhandledContinue(location: Location): Nothing =
             forRuntime("Unhandled continue statement", location)
 
-        fun invalidCondition(location: Location): Nothing =
-            forRuntime("Condition does not result in a boolean value", location)
-
-        fun invalidLeftOperand(operand: Result<*>, operator: Expr.Binary.Operator, location: Location): Nothing =
+        fun invalidLeftOperand(operand: VoltValue<*>, operator: Expr.Binary.Operator, location: Location): Nothing =
             forRuntime("Left operand '$operand' for '${operator.type}' operator is invalid", location)
 
-        fun invalidRightOperand(operand: Result<*>, operator: Expr.Binary.Operator, location: Location): Nothing =
+        fun invalidRightOperand(operand: VoltValue<*>, operator: Expr.Binary.Operator, location: Location): Nothing =
             forRuntime("Right operand '$operand' for '${operator.type}' operator is invalid", location)
 
-        fun invalidOperand(operand: Result<*>, operator: Expr.Prefix.Operator, location: Location): Nothing =
+        fun invalidOperand(operand: VoltValue<*>, operator: Expr.Prefix.Operator, location: Location): Nothing =
             forRuntime("Operand '$operand' for '${operator.type}' operator is invalid", location)
 
-        fun nonAccessedValue(value: Result<*>, location: Location): Nothing =
+        fun nonAccessedValue(value: VoltValue<*>, location: Location): Nothing =
             forRuntime("Value of type '${value.javaClass.simpleName}' cannot be accessed", location)
 
-        fun invalidIndex(target: Result<*>, index: Result<*>, location: Location): Nothing =
+        fun invalidIndex(target: VoltValue<*>, index: VoltValue<*>, location: Location): Nothing =
             forRuntime("Value of type '${target.javaClass.simpleName}' cannot be indexed by a value of type '${index.javaClass.simpleName}'", location)
 
-        fun nonIndexedValue(value: Result<*>, location: Location): Nothing =
+        fun nonIndexedValue(value: VoltValue<*>, location: Location): Nothing =
             forRuntime("Value of type '${value.javaClass.simpleName}' cannot be indexed", location)
 
-        fun nonInvokedValue(value: Result<*>, location: Location): Nothing =
+        fun nonInvokedValue(value: VoltValue<*>, location: Location): Nothing =
             forRuntime("Value of type '${value.javaClass.simpleName}' cannot be invoked", location)
 
         fun unresolvedArguments(callable: Callable, location: Location): Nothing =
@@ -100,13 +97,10 @@ class VoltError(stage: String, msg: String, loc: Location) : RuntimeException("V
         fun unresolvedLink(function: VoltFunction, location: Location): Nothing =
             forRuntime("Couldn't resolve link for function '${function.name}'", location)
 
-        fun nonIterableValue(value: Result<*>, location: Location): Nothing =
-            forRuntime("Value of type '${value.javaClass.simpleName}' cannot be iterated over", location)
-
         fun noLink(function: Stmt.Function, location: Location): Nothing =
             forRuntime("No link exists for function '${function.name.value}'", location)
 
-        fun invalidReturnType(value: Result<*>, function: VoltFunction, location: Location = Location.none): Nothing =
+        fun invalidReturnType(value: VoltValue<*>, function: VoltFunction, location: Location = Location.none): Nothing =
             forRuntime("Return type '${value.javaClass.simpleName}' invalid for function '${function.path}'", location)
 
         private fun forLinker(message: String, location: Location): Nothing =
