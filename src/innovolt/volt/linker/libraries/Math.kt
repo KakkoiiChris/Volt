@@ -30,7 +30,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("sin", "n", "Number")
 
-            VoltValue.Number(sin(n.value))
+            n.map(::sin)
         }
 
         addFunction(".cos", 1) { _, data ->
@@ -38,7 +38,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("cos", "n", "Number")
 
-            VoltValue.Number(cos(n.value))
+            n.map(::cos)
         }
 
         addFunction(".tan", 1) { _, data ->
@@ -46,7 +46,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("tan", "n", "Number")
 
-            VoltValue.Number(tan(n.value))
+            n.map(::tan)
         }
 
         addFunction(".asin", 1) { _, data ->
@@ -54,7 +54,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("asin", "n", "Number")
 
-            VoltValue.Number(asin(n.value))
+            n.map(::asin)
         }
 
         addFunction(".acos", 1) { _, data ->
@@ -62,7 +62,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("acos", "n", "Number")
 
-            VoltValue.Number(acos(n.value))
+            n.map(::acos)
         }
 
         addFunction(".atan", 1) { _, data ->
@@ -70,7 +70,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("atan", "n", "Number")
 
-            VoltValue.Number(atan(n.value))
+            n.map(::atan)
         }
 
         addFunction(".atan2", 2) { _, data ->
@@ -87,7 +87,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("sinh", "n", "Number")
 
-            VoltValue.Number(sinh(n.value))
+            n.map(::sinh)
         }
 
         addFunction(".cosh", 1) { _, data ->
@@ -95,7 +95,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("cosh", "n", "Number")
 
-            VoltValue.Number(cosh(n.value))
+            n.map(::cosh)
         }
 
         addFunction(".tanh", 1) { _, data ->
@@ -103,7 +103,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("tanh", "n", "Number")
 
-            VoltValue.Number(tanh(n.value))
+            n.map(::tanh)
         }
 
         addFunction(".asinh", 1) { _, data ->
@@ -111,7 +111,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("asinh", "n", "Number")
 
-            VoltValue.Number(asinh(n.value))
+            n.map(::asinh)
         }
 
         addFunction(".acosh", 1) { _, data ->
@@ -119,7 +119,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("acosh", "n", "Number")
 
-            VoltValue.Number(acosh(n.value))
+            n.map(::acosh)
         }
 
         addFunction(".atanh", 1) { _, data ->
@@ -127,7 +127,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("atanh", "n", "Number")
 
-            VoltValue.Number(atanh(n.value))
+            n.map(::atanh)
         }
 
         addFunction(".hypot", 2) { _, data ->
@@ -144,7 +144,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("sqrt", "n", "Number")
 
-            VoltValue.Number(sqrt(n.value))
+            n.map(::sqrt)
         }
 
         addFunction(".cbrt", 1) { _, data ->
@@ -152,7 +152,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("cbrt", "n", "Number")
 
-            VoltValue.Number(cbrt(n.value))
+            n.map(::cbrt)
         }
 
         addFunction(".pow", 2) { _, data ->
@@ -169,7 +169,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("exp", "n", "Number")
 
-            VoltValue.Number(exp(n.value))
+            n.map(::exp)
         }
 
         addFunction(".expm1", 1) { _, data ->
@@ -177,7 +177,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("expm1", "n", "Number")
 
-            VoltValue.Number(expm1(n.value))
+            n.map(::expm1)
         }
 
         addFunction(".log", 2) { _, data ->
@@ -194,7 +194,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("ln", "n", "Number")
 
-            VoltValue.Number(ln(n.value))
+            n.map(::ln)
         }
 
         addFunction(".log10", 1) { _, data ->
@@ -202,7 +202,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("log10", "n", "Number")
 
-            VoltValue.Number(log10(n.value))
+            n.map(::log10)
         }
 
         addFunction(".log2", 1) { _, data ->
@@ -210,7 +210,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("log2", "n", "Number")
 
-            VoltValue.Number(log2(n.value))
+            n.map(::log2)
         }
 
         addFunction(".ln1p", 1) { _, data ->
@@ -218,7 +218,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("ln1p", "n", "Number")
 
-            VoltValue.Number(ln1p(n.value))
+            n.map(::ln1p)
         }
 
         addFunction(".ceil", 1) { _, data ->
@@ -226,7 +226,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("ceil", "n", "Number")
 
-            VoltValue.Number(ceil(n.value))
+            n.map(::ceil)
         }
 
         addFunction(".floor", 1) { _, data ->
@@ -234,7 +234,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("floor", "n", "Number")
 
-            VoltValue.Number(floor(n.value))
+            n.map(::floor)
         }
 
         addFunction(".truncate", 1) { _, data ->
@@ -242,7 +242,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("truncate", "n", "Number")
 
-            VoltValue.Number(truncate(n.value))
+            n.map(::truncate)
         }
 
         addFunction(".round", 1) { _, data ->
@@ -250,7 +250,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("round", "n", "Number")
 
-            VoltValue.Number(round(n.value))
+            n.map(::round)
         }
 
         addFunction(".abs", 1) { _, data ->
@@ -258,7 +258,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("abs", "n", "Number")
 
-            VoltValue.Number(abs(n.value))
+            n.map(::abs)
         }
 
         addFunction(".min", 2) { _, data ->
@@ -284,7 +284,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("sign", "n", "Number")
 
-            VoltValue.Number(sign(n.value))
+            n.map(::sign)
         }
 
         addFunction(".withSign", 2) { _, data ->
@@ -301,7 +301,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("ulp", "n", "Number")
 
-            VoltValue.Number(n.value.ulp)
+            n.map(Double::ulp)
         }
 
         addFunction(".nextUp", 1) { _, data ->
@@ -309,7 +309,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("nextUp", "n", "Number")
 
-            VoltValue.Number(n.value.nextUp())
+            n.map(Double::nextUp)
         }
 
         addFunction(".nextDown", 1) { _, data ->
@@ -317,7 +317,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("nextDown", "n", "Number")
 
-            VoltValue.Number(n.value.nextDown())
+            n.map(Double::nextDown)
         }
 
         addFunction(".nextTowards", 2) { _, data ->
@@ -334,7 +334,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("isNaN", "n", "Number")
 
-            VoltValue.Boolean(n.value.isNaN())
+            n.map(Double::isNaN)
         }
 
         addFunction(".isFinite", 1) { _, data ->
@@ -342,7 +342,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("isFinite", "n", "Number")
 
-            VoltValue.Boolean(n.value.isFinite())
+            n.map(Double::isFinite)
         }
 
         addFunction(".fact", 1) { _, data ->
@@ -350,7 +350,7 @@ object Math : Link {
 
             n as? VoltValue.Number ?: VoltError.invalidLinkFunctionArgument("fact", "n", "Number")
 
-            VoltValue.Number(fact(n.value))
+            n.map(::fact)
         }
 
         addFunction(".comb", 2) { _, data ->

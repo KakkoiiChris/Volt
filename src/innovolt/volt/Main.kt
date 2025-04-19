@@ -41,7 +41,7 @@ private fun repl() {
                 
                 exec(runtime, source)
             }
-            catch (error: VoltError) {
+            catch (_: VoltError) {
                 try {
                     val source = Source("REPL", "return $text;")
                     

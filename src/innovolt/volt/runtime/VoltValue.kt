@@ -17,56 +17,43 @@ import kotlin.math.floor
  */
 abstract class VoltValue<X>(val value: X) {
     companion object {
-        fun of(x: Any) =
+        fun of(x: Any): VoltValue<*>? =
             when (x) {
-                is VoltValue<*>            -> x
+                is VoltValue<*>   -> x
 
-                is kotlin.Boolean          -> Boolean(x)
+                is kotlin.Boolean -> Boolean(x)
 
-                is Double                  -> Number(x)
+                is Double         -> Number(x)
 
-                is kotlin.String           -> String(x)
+                is kotlin.String  -> String(x)
 
-                is VoltList                -> List(x)
+                is VoltList       -> List(x)
 
-                is VoltMap                 -> Map(x)
+                is VoltMap        -> Map(x)
 
-                is VoltFunction            -> Function(x)
+                is VoltFunction   -> Function(x)
 
-                is VoltClass               -> Class(x)
+                is VoltClass      -> Class(x)
 
-                is VoltInstance            -> Instance(x)
+                is VoltInstance   -> Instance(x)
 
-                innovolt.volt.runtime.Null -> Null
+                VoltNull          -> Null
 
-                kotlin.Unit                -> Unit
+                kotlin.Unit       -> Unit
 
-                else                       -> null
+                else              -> null
             }
     }
 
     open val size get() = Number(1.0)
 
+    fun map(transform: (X) -> Any) =
+        of(transform(value))!!
+
     fun toValue() =
         Expr.Value(Location.none, this)
 
-    fun toBoolean() = Boolean(
-        when (this) {
-            is Boolean -> value
-
-            is Number  -> value != 0.0
-
-            is String  -> value.isNotEmpty()
-
-            is List    -> value.isNotEmpty()
-
-            is Map     -> value.isNotEmpty()
-
-            Null       -> false
-
-            else       -> true
-        }
-    )
+    open fun toBoolean() = true
 
     override fun toString() = value.toString()
 
@@ -75,9 +62,13 @@ abstract class VoltValue<X>(val value: X) {
             val `true` = Boolean(true)
             val `false` = Boolean(false)
         }
+
+        override fun toBoolean() = value
     }
 
     class Number(value: Double) : VoltValue<Double>(value) {
+        override fun toBoolean() = value != 0.0
+
         override fun toString() =
             if (value == floor(value))
                 value.toInt().toString()
@@ -87,14 +78,20 @@ abstract class VoltValue<X>(val value: X) {
 
     class String(value: kotlin.String) : VoltValue<kotlin.String>(value) {
         override val size get() = Number(value.length.toDouble())
+
+        override fun toBoolean() = value.isNotEmpty()
     }
 
     class List(value: VoltList) : VoltValue<VoltList>(value) {
         override val size get() = Number(value.size.toDouble())
+
+        override fun toBoolean() = value.isNotEmpty()
     }
 
     class Map(value: VoltMap) : VoltValue<VoltMap>(value) {
         override val size get() = Number(value.size.toDouble())
+
+        override fun toBoolean() = value.isNotEmpty()
     }
 
     class Function(value: VoltFunction) : VoltValue<VoltFunction>(value)
@@ -105,7 +102,9 @@ abstract class VoltValue<X>(val value: X) {
 
     class ClassLink(value: Any) : VoltValue<Any>(value)
 
-    object Null : VoltValue<innovolt.volt.runtime.Null>(innovolt.volt.runtime.Null)
+    data object Null : VoltValue<VoltNull>(VoltNull) {
+        override fun toBoolean() = false
+    }
 
-    object Unit : VoltValue<kotlin.Unit>(kotlin.Unit)
+    data object Unit : VoltValue<kotlin.Unit>(kotlin.Unit)
 }

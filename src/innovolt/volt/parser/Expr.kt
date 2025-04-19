@@ -93,7 +93,7 @@ sealed interface Expr {
             
             companion object {
                 fun byType(type: Token.Type) =
-                    values().first { it.type == type }
+                    entries.first { it.type == type }
             }
         }
     }
@@ -110,7 +110,7 @@ sealed interface Expr {
             
             companion object {
                 fun byType(type: Token.Type) =
-                    values().first { it.type == type }
+                    entries.first { it.type == type }
             }
         }
     }

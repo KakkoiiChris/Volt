@@ -71,7 +71,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<VoltValue<*>
     override fun visitTernaryExpr(expr: Expr.Ternary): VoltValue<*> {
         val condition = visit(expr.condition).toBoolean()
 
-        return visit(if (condition.value) expr.yes else expr.no)
+        return visit(if (condition) expr.yes else expr.no)
     }
 
     override fun visitBinaryExpr(expr: Expr.Binary) =
@@ -160,7 +160,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<VoltValue<*>
             Expr.Binary.Operator.AND           -> {
                 val left = visit(expr.left)
 
-                if (left.toBoolean().value) {
+                if (left.toBoolean()) {
                     visit(expr.right)
                 }
                 else {
@@ -171,7 +171,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<VoltValue<*>
             Expr.Binary.Operator.OR            -> {
                 val left = visit(expr.left)
 
-                if (left.toBoolean().value) {
+                if (left.toBoolean()) {
                     left
                 }
                 else {
@@ -485,7 +485,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<VoltValue<*>
     override fun visitIfStmt(stmt: Stmt.If) {
         val condition = visit(stmt.condition).toBoolean()
 
-        if (condition.value) {
+        if (condition) {
             visit(stmt.body)
         }
         else {
@@ -497,7 +497,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<VoltValue<*>
         while (true) {
             val condition = visit(stmt.condition).toBoolean()
 
-            if (!condition.value) break
+            if (!condition) break
 
             try {
                 visit(stmt.body)
@@ -541,7 +541,7 @@ class Runtime(private val linker: Linker = Linker()) : Expr.Visitor<VoltValue<*>
 
             val condition = visit(stmt.condition).toBoolean()
 
-            if (!condition.value) break
+            if (!condition) break
         }
     }
 

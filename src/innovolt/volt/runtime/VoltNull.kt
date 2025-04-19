@@ -11,6 +11,6 @@ package innovolt.volt.runtime
  *
  * @author Christian Bryce Alexander
  */
-object Null {
+object VoltNull {
     override fun toString() = "null"
 }

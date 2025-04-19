@@ -20,7 +20,7 @@ class Lexer(private val source: Source) : Iterator<Token> {
         private const val NUL = '\u0000'
     }
     
-    private val keywords = Token.Type.Keyword.values()
+    private val keywords = Token.Type.Keyword.entries
         .associateBy { it.name.lowercase() }
     
     private val literals = listOf(VoltValue.Boolean.`true`, VoltValue.Boolean.`false`, VoltValue.Null, VoltValue.Unit)
@@ -294,7 +294,7 @@ class Lexer(private val source: Source) : Iterator<Token> {
                     VoltError.unclosedString(location)
                 }
                 
-                if (skip('\\')) {
+                if (match('\\')) {
                     append(escape(delimiter))
                 }
                 else {

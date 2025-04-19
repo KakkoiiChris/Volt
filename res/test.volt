@@ -1,2 +1,3 @@
-write(null and 15);
-write(null or 15);
+x = Thread("loop", ()->{
+    for ()
+});
